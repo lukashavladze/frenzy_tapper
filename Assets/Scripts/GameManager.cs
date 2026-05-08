@@ -253,14 +253,14 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void HandleSwitch(TapButton newButton)
+    void EvaluateButtonResult(TapButton button)
     {
-        float previousPercent =
-            (float)currentButton.currentTaps /
-            currentButton.maxTaps;
+        float percent =
+            (float)button.currentTaps /
+            button.maxTaps;
 
         // BAD
-        if (previousPercent < 0.5f)
+        if (percent < 0.5f)
         {
             timer -= 3f;
 
@@ -273,8 +273,8 @@ public class GameManager : MonoBehaviour
         }
 
         // GOOD
-        else if (previousPercent >= 0.65f &&
-                 previousPercent < 0.85f)
+        else if (percent >= 0.65f &&
+                 percent < 0.85f)
         {
             timer += 3f;
 
@@ -287,8 +287,8 @@ public class GameManager : MonoBehaviour
         }
 
         // PERFECT
-        else if (previousPercent >= 0.85f &&
-                 previousPercent <= 1f)
+        else if (percent >= 0.85f &&
+                 percent <= 1f)
         {
             timer += 8f;
 
@@ -299,6 +299,12 @@ public class GameManager : MonoBehaviour
                 Color.yellow
             );
         }
+    }
+
+    void HandleSwitch(TapButton newButton)
+    {
+        // Evaluate previous button result
+        EvaluateButtonResult(currentButton);
 
         // Deactivate previous
         currentButton.SetInactive();
@@ -366,6 +372,9 @@ public class GameManager : MonoBehaviour
 
     void ExpireButton(TapButton expiredButton)
     {
+        // Evaluate expired button
+        EvaluateButtonResult(expiredButton);
+
         // Disable expired button
         expiredButton.SetInactive();
 
@@ -385,11 +394,13 @@ public class GameManager : MonoBehaviour
         {
             if (!buttons[i].isActive)
             {
-                inactiveButtons.Add(buttons[i]);
+                inactiveButtons.Add(
+                    buttons[i]
+                );
             }
         }
 
-        // Activate random inactive
+        // Activate one random inactive
         if (inactiveButtons.Count > 0)
         {
             int rand =
@@ -398,7 +409,8 @@ public class GameManager : MonoBehaviour
                     inactiveButtons.Count
                 );
 
-            inactiveButtons[rand].Activate();
+            inactiveButtons[rand]
+                .Activate();
         }
     }
 
