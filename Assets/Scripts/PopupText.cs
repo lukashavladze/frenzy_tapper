@@ -9,8 +9,6 @@ public class PopupText : MonoBehaviour
 
     private TMP_Text text;
 
-    private Color startColor;
-
     private RectTransform rect;
 
     private float timer;

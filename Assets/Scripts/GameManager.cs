@@ -8,6 +8,19 @@ public class GameManager : MonoBehaviour
 
     public TMP_Text timerText;
     public TMP_Text scoreText;
+    public TMP_Text comboText;
+
+    public GameObject popupPrefab;
+
+    public Canvas Canvas;
+
+    private int combo = 1;
+
+    private Vector3 comboOriginalScale;
+
+    private bool comboAnimating = false;
+
+    private float comboAnimTimer = 0f;
 
     private float timer = 30f;
 
@@ -19,12 +32,11 @@ public class GameManager : MonoBehaviour
 
     private bool extraButtonActivated = false;
 
-    public GameObject popupPrefab;
-
-    public Canvas Canvas;
-
     private void Start()
     {
+        comboOriginalScale =
+            comboText.transform.localScale;
+
         // Disable all first
         for (int i = 0; i < buttons.Length; i++)
         {
@@ -56,36 +68,127 @@ public class GameManager : MonoBehaviour
         // Handle active button lifetimes
         for (int i = 0; i < buttons.Length; i++)
         {
-            if (buttons[i].isActive && buttons[i].timerStarted)
+            if (buttons[i].isActive &&
+                buttons[i].timerStarted)
             {
-                buttons[i].currentLifetime -= Time.deltaTime;
+                buttons[i].currentLifetime -=
+                    Time.deltaTime;
 
                 if (buttons[i].currentLifetime <= 0)
                 {
-                    Debug.Log(buttons[i].name + " expired");
-
-                    EndGame();
+                    Debug.Log(
+                        buttons[i].name + " expired"
+                    );
+                    ExpireButton(buttons[i]);
                 }
             }
         }
+
+        UpdateComboAnimation();
 
         UpdateUI();
     }
 
     void UpdateUI()
     {
-        timerText.text = Mathf.CeilToInt(timer).ToString();
+        timerText.text =
+            Mathf.CeilToInt(timer).ToString();
 
-        scoreText.text = "Score: " + score;
+        scoreText.text =
+            "Score: " + score;
+
+        comboText.text =
+            "x" + combo;
+
+        if (combo < 2)
+        {
+            comboText.color = Color.white;
+        }
+        else if (combo < 3)
+        {
+            comboText.color = Color.cyan;
+        }
+        else if (combo < 4)
+        {
+            comboText.color = Color.green;
+        }
+        else if (combo < 5)
+        {
+            comboText.color = Color.yellow;
+        }
+        else if (combo < 6)
+        {
+            comboText.color =
+                new Color(1f, 0.5f, 0f);
+        }
+        else
+        {
+            comboText.color = Color.red;
+            comboText.outlineColor = Color.yellow;
+        }
+    }
+
+    void UpdateComboAnimation()
+    {
+        // Base pulse always active
+        float pulseSpeed = 8f;
+
+        float pulseAmount = 0.15f;
+
+        // Stronger pulse on high combo
+        if (combo >= 5)
+        {
+            pulseSpeed = 14f;
+
+            pulseAmount = 0.25f;
+        }
+
+        float pulse =
+            1f +
+            Mathf.Sin(Time.time * pulseSpeed)
+            * pulseAmount;
+
+        comboText.transform.localScale =
+            comboOriginalScale * pulse;
+
+        // Punch animation when combo increases
+        if (comboAnimating)
+        {
+            comboAnimTimer += Time.deltaTime;
+
+            float progress =
+                comboAnimTimer / 0.12f;
+
+            float extraScale =
+                Mathf.Lerp(
+                    1.2f,
+                    0f,
+                    progress
+                );
+
+            comboText.transform.localScale =
+                comboOriginalScale *
+                (pulse + extraScale);
+
+            if (progress >= 1f)
+            {
+                comboAnimating = false;
+            }
+        }
     }
 
     void ActivateTwoButtons()
     {
-        List<int> indexes = new List<int>();
+        List<int> indexes =
+            new List<int>();
 
         while (indexes.Count < 2)
         {
-            int rand = Random.Range(0, buttons.Length);
+            int rand =
+                Random.Range(
+                    0,
+                    buttons.Length
+                );
 
             if (!indexes.Contains(rand))
             {
@@ -108,7 +211,8 @@ public class GameManager : MonoBehaviour
             return;
 
         // Player switched buttons
-        if (currentButton != null && currentButton != button)
+        if (currentButton != null &&
+            currentButton != button)
         {
             HandleSwitch(button);
         }
@@ -121,10 +225,9 @@ public class GameManager : MonoBehaviour
 
         button.Tap();
 
-        score++;
+        score += 1 * combo;
 
-        // Activate extra option after first tap
-        // Only once in entire game
+        // Activate extra option
         if (firstTapOnThisButton &&
             !extraButtonActivated)
         {
@@ -134,9 +237,15 @@ public class GameManager : MonoBehaviour
         }
 
         // OVERLOAD
-        if (button.currentTaps > button.maxTaps)
+        if (button.currentTaps >=
+            button.maxTaps)
         {
-            SpawnPopup("OVERLOAD!", Color.magenta);
+            SpawnPopup(
+                "OVERLOAD!",
+                Color.magenta
+            );
+
+            ResetCombo();
 
             EndGame();
 
@@ -155,7 +264,12 @@ public class GameManager : MonoBehaviour
         {
             timer -= 3f;
 
-            SpawnPopup("BAD", Color.red);
+            ResetCombo();
+
+            SpawnPopup(
+                "BAD",
+                Color.red
+            );
         }
 
         // GOOD
@@ -164,7 +278,12 @@ public class GameManager : MonoBehaviour
         {
             timer += 3f;
 
-            SpawnPopup("GOOD", Color.cyan);
+            AddCombo();
+
+            SpawnPopup(
+                "GOOD",
+                Color.cyan
+            );
         }
 
         // PERFECT
@@ -173,7 +292,12 @@ public class GameManager : MonoBehaviour
         {
             timer += 8f;
 
-            SpawnPopup("PERFECT!", Color.yellow);
+            AddCombo();
+
+            SpawnPopup(
+                "PERFECT!",
+                Color.yellow
+            );
         }
 
         // Deactivate previous
@@ -181,7 +305,6 @@ public class GameManager : MonoBehaviour
 
         currentButton.ResetButton();
 
-        // Find inactive buttons
         // Find inactive buttons
         List<TapButton> inactiveButtons =
             new List<TapButton>();
@@ -192,22 +315,69 @@ public class GameManager : MonoBehaviour
                 buttons[i] != newButton &&
                 buttons[i] != currentButton)
             {
-                inactiveButtons.Add(buttons[i]);
+                inactiveButtons.Add(
+                    buttons[i]
+                );
             }
         }
 
-        // Activate one random inactive
+        // Activate random inactive
         if (inactiveButtons.Count > 0)
         {
             int rand =
-                Random.Range(0, inactiveButtons.Count);
+                Random.Range(
+                    0,
+                    inactiveButtons.Count
+                );
 
-            inactiveButtons[rand].Activate();
+            inactiveButtons[rand]
+                .Activate();
         }
     }
 
-    void ActivateExtraButton(TapButton current)
+    void ActivateExtraButton(
+        TapButton current)
     {
+        List<TapButton> inactiveButtons =
+            new List<TapButton>();
+
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            if (!buttons[i].isActive)
+            {
+                inactiveButtons.Add(
+                    buttons[i]
+                );
+            }
+        }
+
+        if (inactiveButtons.Count > 0)
+        {
+            int rand =
+                Random.Range(
+                    0,
+                    inactiveButtons.Count
+                );
+
+            inactiveButtons[rand]
+                .Activate();
+        }
+    }
+
+    void ExpireButton(TapButton expiredButton)
+    {
+        // Disable expired button
+        expiredButton.SetInactive();
+
+        expiredButton.ResetButton();
+
+        // If expired was current
+        if (currentButton == expiredButton)
+        {
+            currentButton = null;
+        }
+
+        // Find inactive buttons
         List<TapButton> inactiveButtons =
             new List<TapButton>();
 
@@ -219,16 +389,42 @@ public class GameManager : MonoBehaviour
             }
         }
 
+        // Activate random inactive
         if (inactiveButtons.Count > 0)
         {
             int rand =
-                Random.Range(0, inactiveButtons.Count);
+                Random.Range(
+                    0,
+                    inactiveButtons.Count
+                );
 
             inactiveButtons[rand].Activate();
         }
     }
 
-    void SpawnPopup(string message, Color color)
+    void AddCombo()
+    {
+        combo++;
+
+        combo = Mathf.Clamp(
+            combo,
+            1,
+            999
+        );
+
+        comboAnimating = true;
+
+        comboAnimTimer = 0f;
+    }
+
+    void ResetCombo()
+    {
+        combo = 1;
+    }
+
+    void SpawnPopup(
+        string message,
+        Color color)
     {
         GameObject popup =
             Instantiate(

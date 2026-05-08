@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections;
 
 public class TapButton : MonoBehaviour
 {
@@ -21,10 +22,6 @@ public class TapButton : MonoBehaviour
 
     private Vector3 originalScale;
 
-    private bool animating = false;
-
-    private float animationTimer = 0f;
-
     public ParticleSystem tapParticles;
 
 
@@ -32,35 +29,6 @@ public class TapButton : MonoBehaviour
     private void Start()
     {
         originalScale = transform.localScale;
-    }
-
-
-    private void Update()
-    {
-        if (!animating)
-            return;
-
-        animationTimer += Time.deltaTime;
-
-        float progress = animationTimer / 0.12f;
-
-        // Bounce curve
-        float scale =
-            Mathf.Lerp(
-                0.8f,
-                1.15f,
-                Mathf.Sin(progress * Mathf.PI)
-            );
-
-        transform.localScale =
-            originalScale * scale;
-
-        if (progress >= 1f)
-        {
-            animating = false;
-
-            transform.localScale = originalScale;
-        }
     }
 
 
@@ -110,19 +78,29 @@ public class TapButton : MonoBehaviour
         }
 
         currentTaps++;
-        
+        StartCoroutine(PunchAnimation());
+
 
         Debug.Log(gameObject.name + " taps: " + currentTaps + "/" + maxTaps);
 
-        PlayTapAnimation();
         SpawnParticles();
+        CameraShake.Instance.Shake(0.05f, 0.03f);
     }
 
-    void PlayTapAnimation()
+    IEnumerator PunchAnimation()
     {
-        animating = true;
+        transform.localScale = Vector3.one * 0.85f;
 
-        animationTimer = 0f;
+        yield return new WaitForSeconds(0.05f);
+
+        if (isActive)
+        {
+            transform.localScale = Vector3.one * 1.1f;
+        }
+        else
+        {
+            transform.localScale = Vector3.one;
+        }
     }
 
     void SpawnParticles()
