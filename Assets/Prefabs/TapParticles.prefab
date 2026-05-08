@@ -1430,8 +1430,8 @@ ParticleSystem:
         m_NumAlphaKeys: 2
   UVModule:
     serializedVersion: 2
-    enabled: 0
-    mode: 0
+    enabled: 1
+    mode: 1
     timeMode: 0
     fps: 30
     frameOverTime:
@@ -1549,7 +1549,10 @@ ParticleSystem:
     uvChannelMask: -1
     rowMode: 1
     sprites:
-    - sprite: {fileID: 0}
+    - sprite: {fileID: 21300000, guid: e456ad1f1f0194d43919d2cb7233ac19, type: 3}
+    - sprite: {fileID: 21300000, guid: 3aaaa746e6d0feb489190be66feeeda6, type: 3}
+    - sprite: {fileID: 21300000, guid: 56533ef6263db2e4884a67ecedb42c27, type: 3}
+    - sprite: {fileID: 21300000, guid: 4373277642bcc684cb23868e1f8d404f, type: 3}
     flipU: 0
     flipV: 0
   VelocityModule:
@@ -4890,7 +4893,7 @@ ParticleSystemRenderer:
   m_VertexStreams: 00010304
   m_UseCustomTrailVertexStreams: 0
   m_TrailVertexStreams: 00010304
-  m_Mesh: {fileID: 0}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   m_Mesh1: {fileID: 0}
   m_Mesh2: {fileID: 0}
   m_Mesh3: {fileID: 0}

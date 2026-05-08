@@ -23,6 +23,7 @@ public class TapButton : MonoBehaviour
     private Vector3 originalScale;
 
     public ParticleSystem tapParticles;
+    public int particleSpriteIndex;
 
 
 
@@ -124,6 +125,17 @@ public class TapButton : MonoBehaviour
                 worldPos,
                 Quaternion.identity
             );
+
+        // Change sprite
+        var textureSheet =
+            particles.textureSheetAnimation;
+
+        textureSheet.SetSprite(
+            0,
+            textureSheet.GetSprite(
+                particleSpriteIndex
+            )
+        );
 
         particles.Play();
 
