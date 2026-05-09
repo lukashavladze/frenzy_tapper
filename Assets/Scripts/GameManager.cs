@@ -224,6 +224,24 @@ public class GameManager : MonoBehaviour
         currentButton = button;
 
         button.Tap();
+        // crack
+
+        float percent = (float)button.currentTaps / button.maxTaps;
+
+        int newState = 0;
+
+        if (percent >= 0.2f && percent < 0.6f)
+        {
+            newState = 1;
+        }
+        else if (percent >= 0.6f)
+        {
+            newState = 2;
+        }
+
+        // only update if changed
+        //button.ApplyCrack(newState);
+        button.ApplyCrack(percent);
 
         score += 1 * combo;
 
@@ -252,6 +270,7 @@ public class GameManager : MonoBehaviour
             return;
         }
     }
+        
 
     void EvaluateButtonResult(TapButton button)
     {
@@ -276,6 +295,7 @@ public class GameManager : MonoBehaviour
         else if (percent >= 0.65f &&
                  percent < 0.85f)
         {
+            
             timer += 3f;
 
             AddCombo();
@@ -290,7 +310,8 @@ public class GameManager : MonoBehaviour
         else if (percent >= 0.85f &&
                  percent <= 1f)
         {
-            timer += 8f;
+            
+            timer += 5f;
 
             AddCombo();
 
