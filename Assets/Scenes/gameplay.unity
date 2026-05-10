@@ -627,7 +627,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 4339641514388969036, guid: a0ad5bf06af1ca349b4634afa3c96730, type: 3}
+  m_Sprite: {fileID: -1406968663340182536, guid: e4cb02af04582cd4eb43bf5d03123db7, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -989,7 +989,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 1296139018060540633, guid: 089b887a5e38ad74290462549f4a8416, type: 3}
+  m_Sprite: {fileID: -917418290291434655, guid: 2c48a9f6f191cb543b3f1e80e48774f4, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -2813,7 +2813,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 14c153a0b80edf641821842df584b5e4, type: 3}
+  m_Sprite: {fileID: 757649457450457107, guid: 36d39140b0867ea4f98b1c6a22d1d138, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -2909,9 +2909,9 @@ MonoBehaviour:
   label: {fileID: 1385020816}
   tapParticles: {fileID: 1635036730005213990, guid: acb696bde36201f4893ba147b28bdde3, type: 3}
   particleSpriteIndex: 0
-  intactEgg: {fileID: 21300000, guid: 14c153a0b80edf641821842df584b5e4, type: 3}
-  crack1Egg: {fileID: 21300000, guid: ac50e7b69ab84f94b9ea78a6e780a1c0, type: 3}
-  crack2Egg: {fileID: 21300000, guid: 0dae1ef068d043045836f4c99011c4ec, type: 3}
+  intactEgg: {fileID: 757649457450457107, guid: 36d39140b0867ea4f98b1c6a22d1d138, type: 3}
+  crack1Egg: {fileID: -1406968663340182536, guid: e4cb02af04582cd4eb43bf5d03123db7, type: 3}
+  crack2Egg: {fileID: -917418290291434655, guid: 2c48a9f6f191cb543b3f1e80e48774f4, type: 3}
   crackOverlaySoft: {fileID: 333726990}
   crackOverlayHard: {fileID: 582807319}
 --- !u!1 &2048999361
