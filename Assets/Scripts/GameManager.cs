@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using TMPro;
 using System.Collections.Generic;
 
@@ -32,6 +32,8 @@ public class GameManager : MonoBehaviour
 
     private bool extraButtonActivated = false;
 
+    private TapButton lastUsedButton;
+
     private void Start()
     {
         comboOriginalScale =
@@ -46,7 +48,7 @@ public class GameManager : MonoBehaviour
         }
 
         // Activate 2 random buttons
-        ActivateTwoButtons();
+        ActivateInitialButtons();
 
         UpdateUI();
     }
@@ -177,28 +179,17 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void ActivateTwoButtons()
+    void ActivateInitialButtons()
     {
-        List<int> indexes =
-            new List<int>();
+        List<TapButton> pool = new List<TapButton>(buttons);
 
-        while (indexes.Count < 2)
+        for (int i = 0; i < 3; i++)
         {
-            int rand =
-                Random.Range(
-                    0,
-                    buttons.Length
-                );
+            int rand = Random.Range(0, pool.Count);
 
-            if (!indexes.Contains(rand))
-            {
-                indexes.Add(rand);
-            }
-        }
+            pool[rand].Activate();
 
-        for (int i = 0; i < indexes.Count; i++)
-        {
-            buttons[indexes[i]].Activate();
+            pool.RemoveAt(rand);
         }
     }
 
@@ -322,44 +313,54 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void HandleSwitch(TapButton newButton)
+    void EnsureThreeActive(TapButton exclude = null)
     {
-        // Evaluate previous button result
-        EvaluateButtonResult(currentButton);
-
-        // Deactivate previous
-        currentButton.SetInactive();
-
-        currentButton.ResetButton();
-
-        // Find inactive buttons
-        List<TapButton> inactiveButtons =
-            new List<TapButton>();
+        List<TapButton> inactive = new List<TapButton>();
+        int activeCount = 0;
 
         for (int i = 0; i < buttons.Length; i++)
         {
-            if (!buttons[i].isActive &&
-                buttons[i] != newButton &&
-                buttons[i] != currentButton)
-            {
-                inactiveButtons.Add(
-                    buttons[i]
-                );
-            }
+            if (buttons[i].isActive)
+                activeCount++;
+            else
+                inactive.Add(buttons[i]);
         }
 
-        // Activate random inactive
-        if (inactiveButtons.Count > 0)
+        while (activeCount < 3 && inactive.Count > 0)
         {
-            int rand =
-                Random.Range(
-                    0,
-                    inactiveButtons.Count
-                );
+            int rand = Random.Range(0, inactive.Count);
 
-            inactiveButtons[rand]
-                .Activate();
+            TapButton candidate = inactive[rand];
+
+            // ❗ prevent reactivating last used
+            if (candidate == lastUsedButton || candidate == exclude)
+            {
+                inactive.RemoveAt(rand);
+                continue;
+            }
+
+            candidate.Activate();
+
+            inactive.RemoveAt(rand);
+
+            activeCount++;
         }
+    }
+
+    void HandleSwitch(TapButton newButton)
+    {
+        // Evaluate old
+        EvaluateButtonResult(currentButton);
+
+        // Remember it (important!)
+        lastUsedButton = currentButton;
+
+        // Deactivate old
+        currentButton.SetInactive();
+        currentButton.ResetButton();
+
+        // Maintain 3 active buttons
+        EnsureThreeActive(newButton);
     }
 
     void ActivateExtraButton(
@@ -393,46 +394,17 @@ public class GameManager : MonoBehaviour
 
     void ExpireButton(TapButton expiredButton)
     {
-        // Evaluate expired button
         EvaluateButtonResult(expiredButton);
 
-        // Disable expired button
-        expiredButton.SetInactive();
+        lastUsedButton = expiredButton;
 
+        expiredButton.SetInactive();
         expiredButton.ResetButton();
 
-        // If expired was current
         if (currentButton == expiredButton)
-        {
             currentButton = null;
-        }
 
-        // Find inactive buttons
-        List<TapButton> inactiveButtons =
-            new List<TapButton>();
-
-        for (int i = 0; i < buttons.Length; i++)
-        {
-            if (!buttons[i].isActive)
-            {
-                inactiveButtons.Add(
-                    buttons[i]
-                );
-            }
-        }
-
-        // Activate one random inactive
-        if (inactiveButtons.Count > 0)
-        {
-            int rand =
-                Random.Range(
-                    0,
-                    inactiveButtons.Count
-                );
-
-            inactiveButtons[rand]
-                .Activate();
-        }
+        EnsureThreeActive();
     }
 
     void AddCombo()

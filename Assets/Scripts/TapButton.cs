@@ -50,6 +50,7 @@ public class TapButton : MonoBehaviour
         isActive = true;
 
         //image.color = Color.green;
+        image.color = Color.white;
 
         transform.localScale = Vector3.one * 1.1f;
 
@@ -67,6 +68,12 @@ public class TapButton : MonoBehaviour
         image.color = Color.gray;
 
         transform.localScale = Vector3.one;
+
+        if (crackOverlaySoft != null)
+            crackOverlaySoft.color = new Color(1, 1, 1, 0);
+
+        if (crackOverlayHard != null)
+            crackOverlayHard.color = new Color(1, 1, 1, 0);
     }
 
     //public void ApplyCrack(int state)
