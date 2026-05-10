@@ -2,6 +2,7 @@
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
+using System.Collections.Generic;
 
 public class TapButton : MonoBehaviour
 {
@@ -18,30 +19,37 @@ public class TapButton : MonoBehaviour
 
     public Image image;
 
-    public TMP_Text label;
+    //public TMP_Text label;
 
     private Vector3 originalScale;
 
     public ParticleSystem tapParticles;
     public int particleSpriteIndex;
 
-    // maybe be deleted need to ensure
-    public Sprite intactEgg;
-    public Sprite crack1Egg;
-    public Sprite crack2Egg;
+    public GameObject crackPrefab;
+    public Transform crackContainer;
+    private Button button;
 
-    private int crackState = 0;
+    private Vector2 lastCrackPosition;
+    private bool hasPreviousCrack = false;
 
-    private int lastAppliedState = -1;
+    private void Awake()
+    {
+        button = GetComponent<Button>();
 
-    public Image crackOverlaySoft;
-    public Image crackOverlayHard;
+        button.onClick.AddListener(OnClicked);
+    }
+
+    void OnClicked()
+    {
+        FindObjectOfType<GameManager>()
+            .TapButton(this);
+    }
 
 
     private void Start()
     {
         originalScale = transform.localScale;
-        image.sprite = intactEgg;
     }
 
 
@@ -69,98 +77,198 @@ public class TapButton : MonoBehaviour
 
         transform.localScale = Vector3.one;
 
-        if (crackOverlaySoft != null)
-            crackOverlaySoft.color = new Color(1, 1, 1, 0);
-
-        if (crackOverlayHard != null)
-            crackOverlayHard.color = new Color(1, 1, 1, 0);
     }
 
-    //public void ApplyCrack(int state)
-    //{
-    //    if (state == lastAppliedState)
-    //        return;
-
-    //    lastAppliedState = state;
-    //    crackState = state;
-
-    //    Sprite targetSprite = intactEgg;
-
-    //    if (crackState == 1)
-    //        targetSprite = crack1Egg;
-    //    else if (crackState >= 2)
-    //        targetSprite = crack2Egg;
-
-    //    // THIS WAS MISSING 👇
-    //    image.sprite = targetSprite;
-    //}
-
-    //public void ApplyCrack(float percent)
-    //{
-    //    // 0 → 1 progress
-
-    //    if (percent < 0.2f)
-    //    {
-    //        crackOverlay.color = new Color(1, 1, 1, 0);
-    //        return;
-    //    }
-
-    //    if (percent < 0.6f)
-    //    {
-    //        crackOverlay.sprite = crack1Egg;
-
-    //        float t = Mathf.InverseLerp(0.2f, 0.6f, percent);
-
-    //        crackOverlay.color = new Color(1, 1, 1, t);
-    //    }
-    //    else
-    //    {
-    //        crackOverlay.sprite = crack2Egg;
-
-    //        float t = Mathf.InverseLerp(0.6f, 1f, percent);
-
-    //        crackOverlay.color = new Color(1, 1, 1, t);
-    //    }
-    //}
-
-    public void ApplyCrack(float percent)
+    void SpawnCrack()
     {
-        // FULL RESET safety
-        if (percent <= 0f)
+        float progress =
+            (float)currentTaps / maxTaps;
+
+        // EXISTING crack gets upgraded
+        if (spawnedCracks.Count >= maxCracks)
         {
-            crackOverlaySoft.color = new Color(1, 1, 1, 0);
-            crackOverlayHard.color = new Color(1, 1, 1, 0);
+            int randomIndex =
+                Random.Range(0, spawnedCracks.Count);
+
+            Image existing =
+                spawnedCracks[randomIndex];
+
+            RectTransform existingRT =
+                existing.GetComponent<RectTransform>();
+
+            float biggerScale =
+                existingRT.localScale.x + 0.08f;
+
+            existingRT.localScale =
+                Vector3.one * biggerScale;
+
+            Color c = existing.color;
+
+            c.a = Mathf.Clamp01(c.a + 0.03f);
+
+            float brightness =
+                Mathf.Lerp(
+                    4f,
+                    8f,
+                    progress
+                );
+
+            c.r = brightness;
+            c.g = brightness;
+            c.b = brightness;
+
+
+
+            existing.color = c;
+
             return;
         }
 
-        // PHASE 1 → soft cracks (0 → 0.5)
-        float softT = Mathf.InverseLerp(0.1f, 0.5f, percent);
-        crackOverlaySoft.color = new Color(1, 1, 1, Mathf.Clamp01(softT));
+        // CREATE NEW CRACK
+        GameObject crack =
+            Instantiate(
+                crackPrefab,
+                crackContainer
+            );
 
-        // PHASE 2 → hard cracks (0.5 → 1)
-        float hardT = Mathf.InverseLerp(0.5f, 1f, percent);
-        crackOverlayHard.color = new Color(1, 1, 1, Mathf.Clamp01(hardT));
+        Image img =
+            crack.GetComponent<Image>();
+
+        RectTransform rt =
+            crack.GetComponent<RectTransform>();
+
+        Vector2 spawnPos;
+
+        // FIRST crack near center
+        if (!hasPreviousCrack)
+        {
+            spawnPos =
+                new Vector2(
+                    Random.Range(-15f, 15f),
+                    Random.Range(-15f, 15f)
+                );
+
+            hasPreviousCrack = true;
+        }
+        else
+        {
+            // grow from previous crack
+            spawnPos =
+                lastCrackPosition +
+                Random.insideUnitCircle * 12f;
+        }
+
+        lastCrackPosition = spawnPos;
+
+        rt.anchoredPosition = spawnPos;
+
+        // SMALL START
+        float startScale =
+            Random.Range(0.25f, 0.40f);
+
+        rt.localScale =
+            Vector3.one * startScale;
+
+        rt.localRotation =
+            Quaternion.Euler(
+                0,
+                0,
+                Random.Range(0f, 360f)
+            );
+
+        // START TRANSPARENT
+        Color crackColor =
+new Color(
+    4f,
+    4f,
+    4f,
+    0f
+);
+
+        img.color = crackColor;
+
+        spawnedCracks.Add(img);
+
+        StartCoroutine(
+            AnimateCrack(
+                img,
+                rt,
+                progress
+            )
+        );
     }
+
+    IEnumerator AnimateCrack(
+    Image img,
+    RectTransform rt,
+    float progress)
+    {
+        float duration = 0.28f;
+
+        float timer = 0f;
+
+        Vector3 startScale =
+            rt.localScale;
+
+        Vector3 targetScale =
+            startScale *
+            Mathf.Lerp(
+    1.8f,
+    3f,
+    progress
+);
+
+        while (timer < duration)
+        {
+            timer += Time.deltaTime;
+
+            float t =
+                timer / duration;
+
+            // smooth fade in
+            Color c = img.color;
+
+            c.a = Mathf.Lerp(0f, 1f, t);
+
+            img.color = c;
+
+            // smooth grow
+            rt.localScale =
+                Vector3.Lerp(
+                    startScale,
+                    targetScale,
+                    t
+                );
+
+            yield return null;
+        }
+    }
+
+    private List<Image> spawnedCracks = new List<Image>();
+
+    public int maxCracks = 8;
 
     public void ResetButton()
     {
-        crackState = 0;
-
-        image.sprite = intactEgg;
+        image.gameObject.SetActive(true);
 
         currentTaps = 0;
 
-        if (crackOverlaySoft != null)
-            crackOverlaySoft.color = new Color(1, 1, 1, 0);
-
-        if (crackOverlayHard != null)
-            crackOverlayHard.color = new Color(1, 1, 1, 0);
+        foreach (Transform child in crackContainer)
+        {
+            Destroy(child.gameObject);
+        }
 
         maxTaps = Random.Range(20, 31);
 
         currentLifetime = lifetime;
 
         timerStarted = false;
+        spawnedCracks.Clear();
+
+        hasPreviousCrack = false;
+
+        lastCrackPosition = Vector2.zero;
     }
 
     public void Tap()
@@ -174,6 +282,7 @@ public class TapButton : MonoBehaviour
         }
 
         currentTaps++;
+        SpawnCrack();
         StartCoroutine(PunchAnimation());
 
 
@@ -181,6 +290,11 @@ public class TapButton : MonoBehaviour
 
         SpawnParticles();
         CameraShake.Instance.Shake(0.05f, 0.03f);
+
+        if (currentTaps >= maxTaps)
+        {
+            return;
+        }
     }
 
     IEnumerator PunchAnimation()
@@ -197,6 +311,16 @@ public class TapButton : MonoBehaviour
         {
             transform.localScale = Vector3.one;
         }
+    }
+
+
+    IEnumerator BreakAnimation()
+    {
+        transform.localScale = Vector3.one * 1.3f;
+
+        yield return new WaitForSeconds(0.08f);
+
+        transform.localScale = Vector3.one;
     }
 
 

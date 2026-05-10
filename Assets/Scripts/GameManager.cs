@@ -230,9 +230,6 @@ public class GameManager : MonoBehaviour
             newState = 2;
         }
 
-        // only update if changed
-        //button.ApplyCrack(newState);
-        button.ApplyCrack(percent);
 
         score += 1 * combo;
 
