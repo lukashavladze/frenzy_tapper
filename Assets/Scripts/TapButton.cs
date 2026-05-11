@@ -18,7 +18,7 @@ public class TapButton : MonoBehaviour
 
     public Image image;
 
-    public TMP_Text label;
+    //public TMP_Text label;
 
     private Vector3 originalScale;
 
@@ -27,21 +27,16 @@ public class TapButton : MonoBehaviour
 
     // maybe be deleted need to ensure
     public Sprite intactEgg;
-    public Sprite crack1Egg;
-    public Sprite crack2Egg;
 
-    private int crackState = 0;
-
-    private int lastAppliedState = -1;
-
-    public Image crackOverlaySoft;
-    public Image crackOverlayHard;
+    public Image crackSoft;
+    public Image crackMedium;
+    public Image crackHard;
+    public Image crackDestroyed;
 
 
     private void Start()
     {
         originalScale = transform.localScale;
-        image.sprite = intactEgg;
     }
 
 
@@ -69,11 +64,17 @@ public class TapButton : MonoBehaviour
 
         transform.localScale = Vector3.one;
 
-        if (crackOverlaySoft != null)
-            crackOverlaySoft.color = new Color(1, 1, 1, 0);
+        if (crackSoft != null)
+            crackSoft.color = new Color(1, 1, 1, 0);
 
-        if (crackOverlayHard != null)
-            crackOverlayHard.color = new Color(1, 1, 1, 0);
+        if (crackMedium != null)
+            crackMedium.color = new Color(1, 1, 1, 0);
+
+        if (crackHard != null)
+            crackHard.color = new Color(1, 1, 1, 0);
+
+        if (crackDestroyed != null)
+            crackDestroyed.color = new Color(1, 1, 1, 0);
     }
 
     //public void ApplyCrack(int state)
@@ -125,36 +126,106 @@ public class TapButton : MonoBehaviour
 
     public void ApplyCrack(float percent)
     {
-        // FULL RESET safety
-        if (percent <= 0f)
+        percent = Mathf.Clamp01(percent);
+
+        // SOFT
+        float softT =
+            Mathf.InverseLerp(
+                0.15f,
+                0.40f,
+                percent
+            );
+
+        crackSoft.color =
+            new Color(
+                1,
+                1,
+                1,
+                Mathf.Clamp01(softT)
+            );
+
+        // MEDIUM
+        float mediumT =
+            Mathf.InverseLerp(
+                0.40f,
+                0.65f,
+                percent
+            );
+
+        crackMedium.color =
+            new Color(
+                1,
+                1,
+                1,
+                Mathf.Clamp01(mediumT)
+            );
+
+        // HARD
+        float hardT =
+            Mathf.InverseLerp(
+                0.65f,
+                0.90f,
+                percent
+            );
+
+        crackHard.color =
+            new Color(
+                1,
+                1,
+                1,
+                Mathf.Clamp01(hardT)
+            );
+
+        // DESTROYED
+        if (percent >= 0.90f)
         {
-            crackOverlaySoft.color = new Color(1, 1, 1, 0);
-            crackOverlayHard.color = new Color(1, 1, 1, 0);
-            return;
+            // instantly hide old layers
+            crackSoft.color =
+                new Color(1, 1, 1, 0);
+
+            crackMedium.color =
+                new Color(1, 1, 1, 0);
+
+            crackHard.color =
+                new Color(1, 1, 1, 0);
+
+            // optionally hide base egg too
+            image.color =
+                new Color(1, 1, 1, 0);
+
+            // instantly show destroyed
+            crackDestroyed.color =
+                Color.white;
         }
+        else
+        {
+            // keep base visible normally
+            image.color = Color.white;
 
-        // PHASE 1 → soft cracks (0 → 0.5)
-        float softT = Mathf.InverseLerp(0.1f, 0.5f, percent);
-        crackOverlaySoft.color = new Color(1, 1, 1, Mathf.Clamp01(softT));
-
-        // PHASE 2 → hard cracks (0.5 → 1)
-        float hardT = Mathf.InverseLerp(0.5f, 1f, percent);
-        crackOverlayHard.color = new Color(1, 1, 1, Mathf.Clamp01(hardT));
+            // hide destroyed before final stage
+            crackDestroyed.color =
+                new Color(1, 1, 1, 0);
+        }
     }
 
     public void ResetButton()
     {
-        crackState = 0;
 
         image.sprite = intactEgg;
 
         currentTaps = 0;
 
-        if (crackOverlaySoft != null)
-            crackOverlaySoft.color = new Color(1, 1, 1, 0);
+        if (crackSoft != null)
+            crackSoft.color = new Color(1, 1, 1, 0);
 
-        if (crackOverlayHard != null)
-            crackOverlayHard.color = new Color(1, 1, 1, 0);
+        if (crackMedium != null)
+            crackMedium.color = new Color(1, 1, 1, 0);
+
+        if (crackHard != null)
+            crackHard.color = new Color(1, 1, 1, 0);
+
+        if (crackDestroyed != null)
+            crackDestroyed.color = new Color(1, 1, 1, 0);
 
         maxTaps = Random.Range(20, 31);
 

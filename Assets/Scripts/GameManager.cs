@@ -219,16 +219,6 @@ public class GameManager : MonoBehaviour
 
         float percent = (float)button.currentTaps / button.maxTaps;
 
-        int newState = 0;
-
-        if (percent >= 0.2f && percent < 0.6f)
-        {
-            newState = 1;
-        }
-        else if (percent >= 0.6f)
-        {
-            newState = 2;
-        }
 
         // only update if changed
         //button.ApplyCrack(newState);
