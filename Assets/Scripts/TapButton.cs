@@ -24,6 +24,7 @@ public class TapButton : MonoBehaviour
 
     public ParticleSystem tapParticles;
     public int particleSpriteIndex;
+    public ParticleSystem destroyParticles;
 
     // maybe be deleted need to ensure
     public Sprite intactEgg;
@@ -77,53 +78,6 @@ public class TapButton : MonoBehaviour
             crackDestroyed.color = new Color(1, 1, 1, 0);
     }
 
-    //public void ApplyCrack(int state)
-    //{
-    //    if (state == lastAppliedState)
-    //        return;
-
-    //    lastAppliedState = state;
-    //    crackState = state;
-
-    //    Sprite targetSprite = intactEgg;
-
-    //    if (crackState == 1)
-    //        targetSprite = crack1Egg;
-    //    else if (crackState >= 2)
-    //        targetSprite = crack2Egg;
-
-    //    // THIS WAS MISSING 👇
-    //    image.sprite = targetSprite;
-    //}
-
-    //public void ApplyCrack(float percent)
-    //{
-    //    // 0 → 1 progress
-
-    //    if (percent < 0.2f)
-    //    {
-    //        crackOverlay.color = new Color(1, 1, 1, 0);
-    //        return;
-    //    }
-
-    //    if (percent < 0.6f)
-    //    {
-    //        crackOverlay.sprite = crack1Egg;
-
-    //        float t = Mathf.InverseLerp(0.2f, 0.6f, percent);
-
-    //        crackOverlay.color = new Color(1, 1, 1, t);
-    //    }
-    //    else
-    //    {
-    //        crackOverlay.sprite = crack2Egg;
-
-    //        float t = Mathf.InverseLerp(0.6f, 1f, percent);
-
-    //        crackOverlay.color = new Color(1, 1, 1, t);
-    //    }
-    //}
-
     public void ApplyCrack(float percent)
     {
         percent = Mathf.Clamp01(percent);
@@ -175,37 +129,64 @@ public class TapButton : MonoBehaviour
                 1,
                 Mathf.Clamp01(hardT)
             );
+    }
 
-        // DESTROYED
-        if (percent >= 0.90f)
+    public void ShowDestroyed()
+    {
+        StartCoroutine(DestroySequence());
+    }
+
+    IEnumerator DestroySequence()
+    {
+        // hide crack layers
+        crackSoft.color =
+            new Color(1, 1, 1, 0);
+
+        crackMedium.color =
+            new Color(1, 1, 1, 0);
+
+        crackHard.color =
+            new Color(1, 1, 1, 0);
+
+        // hide egg
+        image.color =
+            new Color(1, 1, 1, 0);
+
+        // PARTICLES FIRST
+        if (destroyParticles != null)
         {
-            // instantly hide old layers
-            crackSoft.color =
-                new Color(1, 1, 1, 0);
+            Vector3 spawnPos =
+    transform.position +
+    new Vector3(0.1f, 0.1f, 0f);
 
-            crackMedium.color =
-                new Color(1, 1, 1, 0);
+            ParticleSystem p =
+                Instantiate(
+                    destroyParticles,
+                    spawnPos,
+                    Quaternion.identity,
+                    transform.parent
+                );
 
-            crackHard.color =
-                new Color(1, 1, 1, 0);
+            p.Play();
 
-            // optionally hide base egg too
-            image.color =
-                new Color(1, 1, 1, 0);
-
-            // instantly show destroyed
-            crackDestroyed.color =
-                Color.white;
+            Destroy(
+                p.gameObject,
+                2f
+            );
         }
-        else
-        {
-            // keep base visible normally
-            image.color = Color.white;
 
-            // hide destroyed before final stage
-            crackDestroyed.color =
-                new Color(1, 1, 1, 0);
-        }
+        // strong shake
+        CameraShake.Instance.Shake(
+            0.15f,
+            0.12f
+        );
+
+        // wait a bit so burst is visible
+        yield return new WaitForSeconds(0.10f);
+
+        // THEN show destroyed egg
+        crackDestroyed.color =
+            Color.white;
     }
 
     public void ResetButton()

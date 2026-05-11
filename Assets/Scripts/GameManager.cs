@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using TMPro;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 
 public class GameManager : MonoBehaviour
 {
@@ -55,6 +57,13 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
+        if (Keyboard.current.spaceKey.wasPressedThisFrame)
+        {
+            SceneManager.LoadScene(
+                SceneManager.GetActiveScene().buildIndex
+            );
+        }
+
         if (gameEnded)
             return;
 
@@ -239,6 +248,7 @@ public class GameManager : MonoBehaviour
         if (button.currentTaps >=
             button.maxTaps)
         {
+            button.ShowDestroyed();
             SpawnPopup(
                 "OVERLOAD!",
                 Color.magenta
