@@ -34,6 +34,26 @@ public class TapButton : MonoBehaviour
     public Image crackHard;
     public Image crackDestroyed;
 
+    public bool isDestroying;
+    public bool resultEvaluated;
+
+
+    public enum EggType
+    {
+        Precision,
+        Normal,
+        Rhythm,
+        Hidden
+    }
+
+    public EggType eggType;
+
+    [Header("Rhythm")]
+
+    public bool pulseActive;
+
+    public int missedRhythmHits;
+
 
     private void Start()
     {
@@ -44,6 +64,12 @@ public class TapButton : MonoBehaviour
     public void Activate()
     {
         isActive = true;
+        missedRhythmHits = 0;
+        pulseActive = false;
+        if (eggType == EggType.Rhythm)
+        {
+            StartCoroutine(RhythmPulse());
+        }
 
         //image.color = Color.green;
         image.color = Color.white;
@@ -78,8 +104,32 @@ public class TapButton : MonoBehaviour
             crackDestroyed.color = new Color(1, 1, 1, 0);
     }
 
+    IEnumerator RhythmPulse()
+    {
+        while (isActive &&
+               eggType == EggType.Rhythm)
+        {
+            pulseActive = true;
+
+            transform.localScale =
+                Vector3.one * 1.25f;
+
+            yield return new WaitForSeconds(0.25f);
+
+            pulseActive = false;
+
+            transform.localScale =
+                Vector3.one * 1.1f;
+
+            yield return new WaitForSeconds(0.5f);
+        }
+    }
+
     public void ApplyCrack(float percent)
     {
+        if (eggType == EggType.Hidden)
+            return;
+
         percent = Mathf.Clamp01(percent);
 
         // SOFT
@@ -133,31 +183,30 @@ public class TapButton : MonoBehaviour
 
     public void ShowDestroyed()
     {
+        if (isDestroying)
+            return;
+
+        isDestroying = true;
+
         StartCoroutine(DestroySequence());
     }
 
     IEnumerator DestroySequence()
     {
         // hide crack layers
-        crackSoft.color =
-            new Color(1, 1, 1, 0);
-
-        crackMedium.color =
-            new Color(1, 1, 1, 0);
-
-        crackHard.color =
-            new Color(1, 1, 1, 0);
+        crackSoft.color = new Color(1, 1, 1, 0);
+        crackMedium.color = new Color(1, 1, 1, 0);
+        crackHard.color = new Color(1, 1, 1, 0);
 
         // hide egg
-        image.color =
-            new Color(1, 1, 1, 0);
+        image.color = new Color(1, 1, 1, 0);
 
-        // PARTICLES FIRST
+        // particles
         if (destroyParticles != null)
         {
             Vector3 spawnPos =
-    transform.position +
-    new Vector3(0.1f, 0.1f, 0f);
+                transform.position +
+                new Vector3(0.1f, 0.1f, 0f);
 
             ParticleSystem p =
                 Instantiate(
@@ -169,28 +218,39 @@ public class TapButton : MonoBehaviour
 
             p.Play();
 
-            Destroy(
-                p.gameObject,
-                2f
-            );
+            Destroy(p.gameObject, 2f);
         }
 
-        // strong shake
-        CameraShake.Instance.Shake(
-            0.15f,
-            0.12f
-        );
+        // shake
+        CameraShake.Instance.Shake(0.15f, 0.12f);
 
-        // wait a bit so burst is visible
-        yield return new WaitForSeconds(0.10f);
+        // SMALL HIT PAUSE
+        Time.timeScale = 0.05f;
 
-        // THEN show destroyed egg
-        crackDestroyed.color =
-            Color.white;
+        yield return new WaitForSecondsRealtime(0.06f);
+
+        Time.timeScale = 1f;
+
+        // small extra delay
+        yield return new WaitForSeconds(0.20f);
+
+        // show destroyed egg
+        crackDestroyed.color = Color.white;
+
+        yield return new WaitForSeconds(0.4f);
+
+        SetInactive();
+
+        ResetButton();
+
+        isDestroying = false;
     }
 
     public void ResetButton()
     {
+        resultEvaluated = false;
+        missedRhythmHits = 0;
+        pulseActive = false;
 
         image.sprite = intactEgg;
 
@@ -208,7 +268,48 @@ public class TapButton : MonoBehaviour
         if (crackDestroyed != null)
             crackDestroyed.color = new Color(1, 1, 1, 0);
 
-        maxTaps = Random.Range(20, 31);
+        switch (eggType)
+        {
+            case EggType.Precision:
+
+                int[] precisionValues = { 15, 20 };
+
+                maxTaps =
+                    precisionValues[
+                        Random.Range(0, precisionValues.Length)
+                    ];
+
+                if (maxTaps == 15)
+                    lifetime = 3f;
+                else if (maxTaps == 20)
+                    lifetime = 4f;
+
+                break;
+
+            case EggType.Normal:
+
+                maxTaps = Random.Range(25, 40);
+
+                lifetime = 5f;
+
+                break;
+
+            case EggType.Rhythm:
+
+                maxTaps = 5;
+
+                lifetime = 7f;
+
+                break;
+
+            case EggType.Hidden:
+
+                maxTaps = Random.Range(10, 40);
+
+                lifetime = 4f;
+
+                break;
+        }
 
         currentLifetime = lifetime;
 
@@ -220,34 +321,119 @@ public class TapButton : MonoBehaviour
         if (!isActive)
             return;
 
+        // prevent extra taps while destroying
+        if (isDestroying)
+            return;
+
         if (!timerStarted)
         {
             timerStarted = true;
         }
 
+        // =========================
+        // RHYTHM EGG
+        // =========================
+        if (eggType == EggType.Rhythm)
+        {
+            // EVERY TAP COUNTS
+            currentTaps++;
+
+            // WRONG HIT
+            if (!pulseActive)
+            {
+                GameManager.Instance.AddTime(-1f);
+
+                SpawnParticles();
+
+                CameraShake.Instance.Shake(
+                    0.03f,
+                    0.02f
+                );
+            }
+            // CORRECT HIT
+            else
+            {
+                GameManager.Instance.AddTime(2f);
+
+                SpawnParticles();
+
+                CameraShake.Instance.Shake(
+                    0.05f,
+                    0.03f
+                );
+
+                StartCoroutine(PunchAnimation());
+            }
+
+            Debug.Log(
+                gameObject.name +
+                " rhythm taps: " +
+                currentTaps +
+                "/" +
+                maxTaps
+            );
+
+            // DESTROY AFTER TOTAL 5 TAPS
+            if (currentTaps >= maxTaps)
+            {
+                resultEvaluated = true;
+
+                isActive = false;
+
+                ShowDestroyed();
+
+                StartCoroutine(
+                    GameManager.Instance
+                        .DelayedExpire(this)
+                );
+            }
+
+            return;
+        }
+
+        // =========================
+        // NORMAL / HIDDEN / PRECISION
+        // =========================
+
         currentTaps++;
+
         StartCoroutine(PunchAnimation());
 
-
-        Debug.Log(gameObject.name + " taps: " + currentTaps + "/" + maxTaps);
+        Debug.Log(
+            gameObject.name +
+            " taps: " +
+            currentTaps +
+            "/" +
+            maxTaps
+        );
 
         SpawnParticles();
-        CameraShake.Instance.Shake(0.05f, 0.03f);
+
+        CameraShake.Instance.Shake(
+            0.05f,
+            0.03f
+        );
     }
 
     IEnumerator PunchAnimation()
     {
-        transform.localScale = Vector3.one * 0.85f;
+        if (eggType == EggType.Rhythm)
+            yield break;
+
+        transform.localScale =
+            Vector3.one * 0.85f;
 
         yield return new WaitForSeconds(0.05f);
 
         if (isActive)
         {
-            transform.localScale = Vector3.one * 1.1f;
+            transform.localScale =
+                Vector3.one * 1.1f;
         }
         else
         {
-            transform.localScale = Vector3.one;
+            transform.localScale =
+                Vector3.one;
         }
     }
 

@@ -3,6 +3,8 @@ using TMPro;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using UnityEngine.InputSystem;
+using static TapButton;
+using System.Collections;
 
 public class GameManager : MonoBehaviour
 {
@@ -35,9 +37,11 @@ public class GameManager : MonoBehaviour
     private bool extraButtonActivated = false;
 
     private TapButton lastUsedButton;
+    public static GameManager Instance;
 
     private void Start()
     {
+        Instance = this;
         comboOriginalScale =
             comboText.transform.localScale;
 
@@ -139,6 +143,16 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void AddTime(float amount)
+    {
+        timer += amount;
+
+        if (timer < 0)
+        {
+            timer = 0;
+        }
+    }
+
     void UpdateComboAnimation()
     {
         // Base pulse always active
@@ -204,6 +218,7 @@ public class GameManager : MonoBehaviour
 
     public void TapButton(TapButton button)
     {
+
         if (gameEnded)
             return;
 
@@ -224,16 +239,36 @@ public class GameManager : MonoBehaviour
         currentButton = button;
 
         button.Tap();
+        if (button.eggType == EggType.Precision && button.currentTaps == button.maxTaps + 1)
+        {
+            button.resultEvaluated = true;
+            button.isActive = false;
+            SpawnPopup("OVERLOAD!", Color.magenta);
+            timer -= 2f;
+            ResetCombo();
+            button.ShowDestroyed();
+            StartCoroutine(DelayedExpire(button)
+        );
+
+            return;
+        }
         // crack
 
         float percent = (float)button.currentTaps / button.maxTaps;
 
 
         // only update if changed
-        //button.ApplyCrack(newState);
         button.ApplyCrack(percent);
 
-        score += 1 * combo;
+        int points = 1;
+
+        if (button.eggType == EggType.Hidden)
+        {
+            points = 3;
+        }
+
+        score += points * combo;
+
 
         // Activate extra option
         if (firstTapOnThisButton &&
@@ -244,24 +279,15 @@ public class GameManager : MonoBehaviour
             extraButtonActivated = true;
         }
 
-        // OVERLOAD
-        if (button.currentTaps >=
-            button.maxTaps)
-        {
-            button.ShowDestroyed();
-            SpawnPopup(
-                "OVERLOAD!",
-                Color.magenta
-            );
-
-            ResetCombo();
-
-            EndGame();
-
-            return;
-        }
     }
-        
+
+    public IEnumerator DelayedExpire(TapButton button)
+    {
+        yield return new WaitForSeconds(0.7f);
+
+        ExpireButton(button);
+    }
+
 
     void EvaluateButtonResult(TapButton button)
     {
@@ -269,48 +295,113 @@ public class GameManager : MonoBehaviour
             (float)button.currentTaps /
             button.maxTaps;
 
+        // =========================
+        // PRECISION EGG
+        // =========================
+        if (button.eggType ==
+            EggType.Precision)
+        {  
+
+            // PERFECT
+            if (button.currentTaps == button.maxTaps)
+            {
+                timer += 10f;
+                AddCombo();
+                SpawnPopup("PERFECT!", Color.yellow);
+                button.ShowDestroyed();
+            }
+            // MISS
+            else
+            {
+                SpawnPopup("MISS",Color.red);
+                ResetCombo();
+                timer -= 1f;
+            }
+
+            return;
+        }          
+
+        // =========================
+        // HIDDEN EGG
+        // =========================
+        if (button.eggType ==
+            EggType.Hidden)
+        {
+            // OVERLOAD
+            if (button.currentTaps > button.maxTaps)
+            {
+                SpawnPopup(
+                    "OVERLOAD!",
+                    Color.magenta
+                );
+                timer -= 1f;
+                ResetCombo();
+                button.ShowDestroyed();
+                return;
+            }
+
+            // PERFECT
+            if (button.currentTaps == button.maxTaps)
+            {
+                timer += 7f;
+                AddCombo();
+                SpawnPopup("PERFECT!", Color.yellow);
+                button.ShowDestroyed();
+            }
+            // GOOD
+            else if (percent >= 0.5f)
+            {
+                timer += 1f;
+                AddCombo();
+                SpawnPopup("GOOD", Color.cyan);
+            }
+            // BAD
+            else
+            {
+                timer -= 1f;
+                ResetCombo();
+                SpawnPopup( "BAD", Color.red);
+            }
+            return;
+        }
+
+        // =========================
+        // NORMAL EGG
+        // =========================
+
+        // OVERLOAD
+        if (button.currentTaps > button.maxTaps)
+        {
+            SpawnPopup("OVERLOAD!", Color.magenta);
+            timer -= 1f;
+            ResetCombo();
+            button.ShowDestroyed();
+            return;
+        }
+
         // BAD
         if (percent < 0.5f)
         {
-            timer -= 3f;
-
+            timer -= 1f;
             ResetCombo();
-
-            SpawnPopup(
-                "BAD",
-                Color.red
-            );
-        }
-
-        // GOOD
-        else if (percent >= 0.65f &&
-                 percent < 0.85f)
-        {
-            
-            timer += 3f;
-
-            AddCombo();
-
-            SpawnPopup(
-                "GOOD",
-                Color.cyan
-            );
+            SpawnPopup("BAD",Color.red);
+            return;
         }
 
         // PERFECT
-        else if (percent >= 0.85f &&
-                 percent <= 1f)
+        if (button.currentTaps == button.maxTaps)
         {
-            
-            timer += 5f;
-
+            timer += 7f;
             AddCombo();
-
-            SpawnPopup(
-                "PERFECT!",
-                Color.yellow
-            );
+            SpawnPopup("PERFECT!", Color.yellow);
+            button.ShowDestroyed();
+            return;
         }
+
+        // GOOD
+        timer += 1f;
+        AddCombo();
+        SpawnPopup("GOOD",Color.cyan);
     }
 
     void EnsureThreeActive(TapButton exclude = null)
@@ -350,7 +441,12 @@ public class GameManager : MonoBehaviour
     void HandleSwitch(TapButton newButton)
     {
         // Evaluate old
-        EvaluateButtonResult(currentButton);
+        if (!currentButton.resultEvaluated)
+        {
+            currentButton.resultEvaluated = true;
+
+            EvaluateButtonResult(currentButton);
+        }
 
         // Remember it (important!)
         lastUsedButton = currentButton;
@@ -394,7 +490,17 @@ public class GameManager : MonoBehaviour
 
     void ExpireButton(TapButton expiredButton)
     {
-        EvaluateButtonResult(expiredButton);
+        if (!expiredButton.isActive && expiredButton.isDestroying)
+        {
+            return;
+        }
+
+        if (!expiredButton.resultEvaluated)
+        {
+            expiredButton.resultEvaluated = true;
+
+            EvaluateButtonResult(expiredButton);
+        }
 
         lastUsedButton = expiredButton;
 
