@@ -244,7 +244,7 @@ public class GameManager : MonoBehaviour
             button.resultEvaluated = true;
             button.isActive = false;
             SpawnPopup("OVERLOAD!", Color.magenta);
-            timer -= 2f;
+            timer -= 1f;
             ResetCombo();
             button.ShowDestroyed();
             StartCoroutine(DelayedExpire(button)
@@ -255,7 +255,6 @@ public class GameManager : MonoBehaviour
         // crack
 
         float percent = (float)button.currentTaps / button.maxTaps;
-
 
         // only update if changed
         button.ApplyCrack(percent);
@@ -291,15 +290,22 @@ public class GameManager : MonoBehaviour
 
     void EvaluateButtonResult(TapButton button)
     {
+
+        // RHYTHM DOES NOT USE EVALUATION
+        if (button.eggType == EggType.Rhythm)
+        {
+            return;
+        }
+
         float percent =
             (float)button.currentTaps /
             button.maxTaps;
 
+
         // =========================
         // PRECISION EGG
         // =========================
-        if (button.eggType ==
-            EggType.Precision)
+        if (button.eggType == EggType.Precision)
         {  
 
             // PERFECT
@@ -311,7 +317,7 @@ public class GameManager : MonoBehaviour
                 button.ShowDestroyed();
             }
             // MISS
-            else
+            else if (button.currentTaps < button.maxTaps)
             {
                 SpawnPopup("MISS",Color.red);
                 ResetCombo();
@@ -341,7 +347,7 @@ public class GameManager : MonoBehaviour
             }
 
             // PERFECT
-            if (button.currentTaps == button.maxTaps)
+            if (percent > 0.90f)
             {
                 timer += 7f;
                 AddCombo();
@@ -379,6 +385,26 @@ public class GameManager : MonoBehaviour
             return;
         }
 
+        // PERFECT
+        if (percent > 0.9f)
+        {
+            timer += 7f;
+            AddCombo();
+            SpawnPopup("PERFECT!", Color.yellow);
+            button.ShowDestroyed();
+            return;
+        }
+
+        if (percent > 0.5f)
+        {
+            timer += 1f;
+            AddCombo();
+            SpawnPopup("GOOD", Color.cyan);
+            return;
+        }
+
+
+
         // BAD
         if (percent < 0.5f)
         {
@@ -388,20 +414,6 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        // PERFECT
-        if (button.currentTaps == button.maxTaps)
-        {
-            timer += 7f;
-            AddCombo();
-            SpawnPopup("PERFECT!", Color.yellow);
-            button.ShowDestroyed();
-            return;
-        }
-
-        // GOOD
-        timer += 1f;
-        AddCombo();
-        SpawnPopup("GOOD",Color.cyan);
     }
 
     void EnsureThreeActive(TapButton exclude = null)
