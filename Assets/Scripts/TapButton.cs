@@ -37,6 +37,15 @@ public class TapButton : MonoBehaviour
     public bool isDestroying;
     public bool resultEvaluated;
 
+    public TextMeshProUGUI precisionTextCount;
+    public TextMeshProUGUI rhythmTextResults;
+
+    [Header("Popup Text")]
+
+    public GameObject popupTextPrefab;
+    public Transform popupSpawnPoint;
+    private int goodTextIndex = 0;
+
 
     public enum EggType
     {
@@ -66,6 +75,7 @@ public class TapButton : MonoBehaviour
         isActive = true;
         missedRhythmHits = 0;
         pulseActive = false;
+        goodTextIndex = 0;
         if (eggType == EggType.Rhythm)
         {
             StartCoroutine(RhythmPulse());
@@ -77,6 +87,7 @@ public class TapButton : MonoBehaviour
         transform.localScale = Vector3.one * 1.1f;
 
         currentLifetime = lifetime;
+        UpdatePrecisionText();
     }
 
     public void SetInactive()
@@ -102,6 +113,9 @@ public class TapButton : MonoBehaviour
 
         if (crackDestroyed != null)
             crackDestroyed.color = new Color(1, 1, 1, 0);
+
+        if (precisionTextCount != null)
+            precisionTextCount.gameObject.SetActive(false);
     }
 
     IEnumerator RhythmPulse()
@@ -246,6 +260,54 @@ public class TapButton : MonoBehaviour
         isDestroying = false;
     }
 
+
+    void ShowPopupText(string message, Color color)
+    {
+        if (popupTextPrefab == null)
+            return;
+
+        Transform spawn =
+            popupSpawnPoint != null
+            ? popupSpawnPoint
+            : transform;
+
+        GameObject obj =
+            Instantiate(
+                popupTextPrefab,
+                spawn
+            );
+
+        RectTransform rect =
+            obj.GetComponent<RectTransform>();
+
+        rect.localPosition = Vector3.zero;
+
+        TMP_Text txt =
+            obj.GetComponent<TMP_Text>();
+
+        txt.text = message;
+        txt.color = color;
+    }
+
+    void UpdatePrecisionText()
+    {
+        if (precisionTextCount == null)
+            return;
+
+        if (eggType != EggType.Precision)
+        {
+            precisionTextCount.gameObject.SetActive(false);
+            return;
+        }
+
+        precisionTextCount.gameObject.SetActive(true);
+
+        precisionTextCount.text =
+            currentTaps +
+            " / " +
+            maxTaps;
+    }
+
     public void ResetButton()
     {
         resultEvaluated = false;
@@ -255,6 +317,7 @@ public class TapButton : MonoBehaviour
         image.sprite = intactEgg;
 
         currentTaps = 0;
+        UpdatePrecisionText();
 
         if (crackSoft != null)
             crackSoft.color = new Color(1, 1, 1, 0);
@@ -315,6 +378,7 @@ public class TapButton : MonoBehaviour
 
         timerStarted = false;
     }
+    
 
     public void Tap()
     {
@@ -341,6 +405,7 @@ public class TapButton : MonoBehaviour
             // WRONG HIT
             if (!pulseActive)
             {
+                ShowPopupText("OFFBEAT", Color.red);
                 GameManager.Instance.AddTime(-1f);
 
                 SpawnParticles();
@@ -353,6 +418,22 @@ public class TapButton : MonoBehaviour
             // CORRECT HIT
             else
             {
+                
+                string[] goodTexts = {"GOOD", "NICE!", "GREAT!", "PERFECT!", "INSANE!"};
+                string SelectedText = goodTexts[goodTextIndex];
+
+                Color[] rhythmColors ={Color.cyan, Color.yellow, new Color(1f, 0.4f, 1f), Color.white};
+
+                Color randomColor = rhythmColors[Random.Range(0, rhythmColors.Length)];
+
+                ShowPopupText(SelectedText, randomColor);
+
+                goodTextIndex++;
+                if (goodTextIndex >= goodTexts.Length)
+                {
+                    goodTextIndex = 0;
+                }
+
                 GameManager.Instance.AddTime(2f);
 
                 SpawnParticles();
@@ -396,6 +477,11 @@ public class TapButton : MonoBehaviour
         // =========================
 
         currentTaps++;
+        if (eggType == EggType.Precision)
+        {
+            UpdatePrecisionText();
+        }
+        
 
         StartCoroutine(PunchAnimation());
 

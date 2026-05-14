@@ -13,6 +13,8 @@ public class PopupText : MonoBehaviour
 
     private float timer;
 
+    public AnimationCurve scaleCurve;
+
     private void Awake()
     {
         text = GetComponent<TMP_Text>();
@@ -43,9 +45,9 @@ public class PopupText : MonoBehaviour
         );
 
         // Slight scale animation
-        transform.localScale =
-            Vector3.one *
-            (1f + timer * 0.3f);
+        float scale = scaleCurve.Evaluate(timer / lifetime);
+
+        transform.localScale = Vector3.one * scale;
 
         if (timer >= lifetime)
         {
