@@ -16,7 +16,7 @@ public class TapButton : MonoBehaviour
 
     public float currentLifetime;
 
-    public Image image;
+    public SpriteRenderer image;
 
     //public TMP_Text label;
 
@@ -29,10 +29,10 @@ public class TapButton : MonoBehaviour
     // maybe be deleted need to ensure
     public Sprite intactEgg;
 
-    public Image crackSoft;
-    public Image crackMedium;
-    public Image crackHard;
-    public Image crackDestroyed;
+    public SpriteRenderer crackSoft;
+    public SpriteRenderer crackMedium;
+    public SpriteRenderer crackHard;
+    public SpriteRenderer crackDestroyed;
 
     public bool isDestroying;
     public bool resultEvaluated;
@@ -84,7 +84,7 @@ public class TapButton : MonoBehaviour
         //image.color = Color.green;
         image.color = Color.white;
 
-        transform.localScale = Vector3.one * 1.1f;
+        transform.localScale = originalScale * 1.1f;
 
         currentLifetime = lifetime;
         UpdatePrecisionText();
@@ -100,7 +100,7 @@ public class TapButton : MonoBehaviour
 
         image.color = Color.gray;
 
-        transform.localScale = Vector3.one;
+        transform.localScale = originalScale;
 
         if (crackSoft != null)
             crackSoft.color = new Color(1, 1, 1, 0);
@@ -126,14 +126,14 @@ public class TapButton : MonoBehaviour
             pulseActive = true;
 
             transform.localScale =
-                Vector3.one * 1.25f;
+                originalScale * 1.25f;
 
             yield return new WaitForSeconds(0.25f);
 
             pulseActive = false;
 
             transform.localScale =
-                Vector3.one * 1.1f;
+                originalScale * 1.1f;
 
             yield return new WaitForSeconds(0.5f);
         }
@@ -507,22 +507,32 @@ public class TapButton : MonoBehaviour
             yield break;
 
         transform.localScale =
-            Vector3.one * 0.85f;
+            originalScale * 0.85f;
 
         yield return new WaitForSeconds(0.05f);
 
         if (isActive)
         {
             transform.localScale =
-                Vector3.one * 1.1f;
+               originalScale * 1.1f;
         }
         else
         {
             transform.localScale =
-                Vector3.one;
+                originalScale;
         }
     }
 
+
+    void OnMouseDown()
+    {
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.TapButton(this);
+            Debug.Log("CLICK WORKED");
+        }
+    }
+    
 
     void SpawnParticles()
     {
