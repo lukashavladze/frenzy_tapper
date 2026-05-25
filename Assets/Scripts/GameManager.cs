@@ -218,11 +218,14 @@ public class GameManager : MonoBehaviour
 
     public void TapButton(TapButton button)
     {
-
         if (gameEnded)
             return;
 
         if (!button.isActive)
+            return;
+
+        // prevent taps while destroying
+        if (button.isDestroying)
             return;
 
         // Player switched buttons
@@ -232,29 +235,54 @@ public class GameManager : MonoBehaviour
             HandleSwitch(button);
         }
 
-        // First time selecting a button
+        // First tap on this egg
         bool firstTapOnThisButton =
             button.currentTaps == 0;
 
         currentButton = button;
 
         button.Tap();
-        if (button.eggType == EggType.Precision && button.currentTaps == button.maxTaps + 1)
+
+        // =========================
+        // OVERLOAD CHECK
+        // =========================
+
+        bool overload =
+            button.currentTaps > button.maxTaps;
+
+        if (overload)
         {
             button.resultEvaluated = true;
-            button.isActive = false;
-            SpawnPopup("OVERLOAD!", Color.magenta);
+
+            SpawnPopup(
+                "OVERLOAD!",
+                Color.magenta
+            );
+
             timer -= 1f;
+
             ResetCombo();
+
+            // BREAK VISUAL
+            button.BreakEgg();
+
+            // DESTROY SEQUENCE
             button.ShowDestroyed();
-            StartCoroutine(DelayedExpire(button)
-        );
+
+            // instantly stop activity
+            button.isActive = false;
+
+            StartCoroutine(
+                DelayedExpire(button)
+            );
 
             return;
         }
-        // crack
 
-        float percent = (float)button.currentTaps / button.maxTaps;
+        // =========================
+        // SCORE
+        // =========================
+
         int points = 1;
 
         if (button.eggType == EggType.Hidden)
@@ -264,8 +292,10 @@ public class GameManager : MonoBehaviour
 
         score += points * combo;
 
+        // =========================
+        // EXTRA BUTTON
+        // =========================
 
-        // Activate extra option
         if (firstTapOnThisButton &&
             !extraButtonActivated)
         {
@@ -273,7 +303,6 @@ public class GameManager : MonoBehaviour
 
             extraButtonActivated = true;
         }
-
     }
 
     public IEnumerator DelayedExpire(TapButton button)
@@ -340,6 +369,7 @@ public class GameManager : MonoBehaviour
                 );
                 timer -= 1f;
                 ResetCombo();
+                button.BreakEgg();
                 button.ShowDestroyed();
                 return;
             }
@@ -350,6 +380,7 @@ public class GameManager : MonoBehaviour
                 timer += 7f;
                 AddCombo();
                 SpawnPopup("PERFECT!", Color.yellow);
+                button.HatchEgg();
                 button.ShowDestroyed();
             }
             // GOOD
@@ -379,6 +410,7 @@ public class GameManager : MonoBehaviour
             SpawnPopup("OVERLOAD!", Color.magenta);
             timer -= 1f;
             ResetCombo();
+            button.BreakEgg();
             button.ShowDestroyed();
             return;
         }
@@ -389,6 +421,7 @@ public class GameManager : MonoBehaviour
             timer += 7f;
             AddCombo();
             SpawnPopup("PERFECT!", Color.yellow);
+            button.HatchEgg();
             button.ShowDestroyed();
             return;
         }
@@ -500,10 +533,10 @@ public class GameManager : MonoBehaviour
 
     void ExpireButton(TapButton expiredButton)
     {
-        if (!expiredButton.isActive && expiredButton.isDestroying)
-        {
-            return;
-        }
+        //if (!expiredButton.isActive && expiredButton.isDestroying)
+        //{
+        //    return;
+        //}
 
         if (!expiredButton.resultEvaluated)
         {

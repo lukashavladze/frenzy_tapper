@@ -97,12 +97,16 @@ public class TapButton : MonoBehaviour
         missedRhythmHits = 0;
         pulseActive = false;
         goodTextIndex = 0;
+        if (crackRenderer != null)
+        {
+            Color c = crackRenderer.color;
+            c.a = 0f;
+            crackRenderer.color = c;
+        }
         if (eggType == EggType.Rhythm)
         {
             StartCoroutine(RhythmPulse());
         }
-
-        //image.color = Color.green;
         image.color = Color.white;
 
         transform.localScale = originalScale * 1.1f;
@@ -119,7 +123,7 @@ public class TapButton : MonoBehaviour
 
         currentLifetime = lifetime;
 
-        image.color = Color.gray;
+        image.color = new Color(0.5f, 0.5f, 0.5f, 1f);
 
         transform.localScale = originalScale;
 
@@ -161,9 +165,13 @@ public class TapButton : MonoBehaviour
 
     IEnumerator DestroySequence()
     {
-
-        // hide egg
-        image.color = new Color(1, 1, 1, 0);
+        // hide crack overlay
+        if (crackRenderer != null)
+        {
+            Color crackColor = crackRenderer.color;
+            crackColor.a = 0f;
+            crackRenderer.color = crackColor;
+        }
 
         // particles
         if (destroyParticles != null)
@@ -186,24 +194,19 @@ public class TapButton : MonoBehaviour
         }
 
         // shake
-        CameraShake.Instance.Shake(0.15f, 0.12f);
+        CameraShake.Instance.Shake(
+            0.15f,
+            0.12f
+        );
 
-        // SMALL HIT PAUSE
+        // hit pause
         Time.timeScale = 0.05f;
 
         yield return new WaitForSecondsRealtime(0.06f);
 
         Time.timeScale = 1f;
 
-        // small extra delay
-        yield return new WaitForSeconds(0.20f);
-
-
-        yield return new WaitForSeconds(0.4f);
-
-        SetInactive();
-
-        ResetButton();
+        yield return new WaitForSeconds(0.6f);
 
         isDestroying = false;
     }
@@ -263,6 +266,9 @@ public class TapButton : MonoBehaviour
         pulseActive = false;
 
         currentTaps = 0;
+        image.enabled = true;
+        image.color = new Color(0.5f, 0.5f, 0.5f, 1f);
+
         UpdatePrecisionText();
 
 
@@ -286,9 +292,10 @@ public class TapButton : MonoBehaviour
 
             case EggType.Normal:
 
-                maxTaps = Random.Range(25, 40);
+                maxTaps = Random.Range(8, 12);
 
                 lifetime = 5f;
+
 
                 break;
 
@@ -509,14 +516,17 @@ public class TapButton : MonoBehaviour
     {
         visualState = EggVisualState.Hatched;
 
-        // disable egg visuals
         image.enabled = false;
 
-        // spawn dragon
-        // (you will assign prefab)
+        if (crackRenderer != null)
+        {
+            Color c = crackRenderer.color;
+            c.a = 0f;
+            crackRenderer.color = c;
+        }
+
         Instantiate(dragonPrefab, transform.position, Quaternion.identity);
 
-        // light burst effect
         CameraShake.Instance.Shake(0.2f, 0.2f);
     }
 
@@ -524,12 +534,64 @@ public class TapButton : MonoBehaviour
     {
         visualState = EggVisualState.Destroyed;
 
+        // hide main egg
         image.enabled = false;
 
-        Instantiate(brokenEggBottomPrefab, transform.position, Quaternion.identity);
-        Instantiate(gooLeakPrefab, transform.position, Quaternion.identity);
+        // hide cracks
+        if (crackRenderer != null)
+        {
+            crackRenderer.enabled = false;
+        }
 
-        CameraShake.Instance.Shake(0.25f, 0.25f);
+        // spawn broken egg
+        GameObject crack =
+            Instantiate(
+                brokenEggBottomPrefab,
+                transform.position,
+                Quaternion.identity,
+                transform.parent
+            );
+
+        crack.transform.localScale =
+            transform.localScale;
+
+        // remove broken egg later
+        Destroy(crack, 0.7f);
+
+        // restore original egg later
+        StartCoroutine(
+            RestoreEggAfterBreak()
+        );
+
+        CameraShake.Instance.Shake(
+            0.25f,
+            0.25f
+        );
+    }
+
+    IEnumerator RestoreEggAfterBreak()
+    {
+        yield return new WaitForSeconds(0.7f);
+
+        // restore original egg
+        image.enabled = true;
+
+        image.color =
+            new Color(
+                0.5f,
+                0.5f,
+                0.5f,
+                1f
+            );
+
+        if (crackRenderer != null)
+        {
+            crackRenderer.enabled = true;
+
+            Color c = crackRenderer.color;
+            c.a = 0f;
+            crackRenderer.color = c;
+        }
     }
 
 
