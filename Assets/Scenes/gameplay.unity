@@ -761,7 +761,7 @@ MonoBehaviour:
   destroyParticles: {fileID: 2953048872988951235, guid: 0ae417f85bf6e824c8abe9cfab6845ac, type: 3}
   isDestroying: 0
   resultEvaluated: 0
-  precisionTextCount: {fileID: 781747464}
+  precisionTextCount: {fileID: 0}
   rhythmTextResults: {fileID: 0}
   crackRenderer: {fileID: 1510217060}
   crackProgress: 0
@@ -771,7 +771,7 @@ MonoBehaviour:
   dragonPrefab: {fileID: 0}
   brokenEggBottomPrefab: {fileID: 6738254739705813082, guid: efe56d7fa424f7743bdaabd73d22e662, type: 3}
   gooLeakPrefab: {fileID: 0}
-  popupTextPrefab: {fileID: 0}
+  popupTextPrefab: {fileID: 8483304130842215981, guid: 7de0601e9abe1d2478c1cf15718eba67, type: 3}
   popupSpawnPoint: {fileID: 0}
   eggType: 2
   pulseActive: 0
@@ -1042,6 +1042,7 @@ Transform:
   m_LocalScale: {x: 0.3, y: 0.3, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 781747463}
   - {fileID: 455909046}
   m_Father: {fileID: 802189324}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1081,7 +1082,7 @@ MonoBehaviour:
   gooLeakPrefab: {fileID: 0}
   popupTextPrefab: {fileID: 0}
   popupSpawnPoint: {fileID: 0}
-  eggType: 3
+  eggType: 0
   pulseActive: 0
   missedRhythmHits: 0
 --- !u!212 &686639051
@@ -1205,15 +1206,15 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 781747462}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 232.47461}
-  m_LocalScale: {x: 1.1111112, y: 1.1111112, z: 1.1111112}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0.015931647, y: 0.015931647, z: 0.004779495}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1140254704}
+  m_Father: {fileID: 686639046}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 244.44449, y: -44}
+  m_AnchoredPosition: {x: 0, y: 3}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &781747464
@@ -1636,7 +1637,6 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 781747463}
   - {fileID: 1856258270}
   - {fileID: 1970521393}
   - {fileID: 2048999362}

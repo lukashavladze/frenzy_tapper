@@ -27,7 +27,7 @@ public class TapButton : MonoBehaviour
     public bool isDestroying;
     public bool resultEvaluated;
 
-    public TextMeshProUGUI precisionTextCount;
+    public TMP_Text precisionTextCount;
     public TextMeshProUGUI rhythmTextResults;
     public SpriteRenderer crackRenderer;
 
