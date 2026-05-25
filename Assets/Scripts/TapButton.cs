@@ -18,27 +18,32 @@ public class TapButton : MonoBehaviour
 
     public SpriteRenderer image;
 
-    //public TMP_Text label;
-
     private Vector3 originalScale;
 
     public ParticleSystem tapParticles;
     public int particleSpriteIndex;
     public ParticleSystem destroyParticles;
 
-    // maybe be deleted need to ensure
-    public Sprite intactEgg;
-
-    public SpriteRenderer crackSoft;
-    public SpriteRenderer crackMedium;
-    public SpriteRenderer crackHard;
-    public SpriteRenderer crackDestroyed;
-
     public bool isDestroying;
     public bool resultEvaluated;
 
     public TextMeshProUGUI precisionTextCount;
     public TextMeshProUGUI rhythmTextResults;
+    public SpriteRenderer crackRenderer;
+
+    private Vector3 crackOriginalScale;
+
+    [Range(0, 1)]
+    public float crackProgress;
+
+    public Material eggMaterial; // assign in inspector
+    public float glowIntensity;
+    public EggVisualState visualState;
+
+
+    public GameObject dragonPrefab;
+    public GameObject brokenEggBottomPrefab;
+    public GameObject gooLeakPrefab;
 
     [Header("Popup Text")]
 
@@ -67,6 +72,22 @@ public class TapButton : MonoBehaviour
     private void Start()
     {
         originalScale = transform.localScale;
+
+        crackOriginalScale =
+            crackRenderer.transform.localScale;
+
+        Color c = crackRenderer.color;
+        c.a = 0f;
+        crackRenderer.color = c;
+    }
+
+    public enum EggVisualState
+    {
+        Inactive,
+        Active,
+        Cracking,
+        Hatched,
+        Destroyed
     }
 
 
@@ -102,18 +123,6 @@ public class TapButton : MonoBehaviour
 
         transform.localScale = originalScale;
 
-        if (crackSoft != null)
-            crackSoft.color = new Color(1, 1, 1, 0);
-
-        if (crackMedium != null)
-            crackMedium.color = new Color(1, 1, 1, 0);
-
-        if (crackHard != null)
-            crackHard.color = new Color(1, 1, 1, 0);
-
-        if (crackDestroyed != null)
-            crackDestroyed.color = new Color(1, 1, 1, 0);
-
         if (precisionTextCount != null)
             precisionTextCount.gameObject.SetActive(false);
     }
@@ -139,61 +148,6 @@ public class TapButton : MonoBehaviour
         }
     }
 
-    public void ApplyCrack(float percent)
-    {
-        if (eggType == EggType.Hidden)
-            return;
-
-        percent = Mathf.Clamp01(percent);
-
-        // SOFT
-        float softT =
-            Mathf.InverseLerp(
-                0.15f,
-                0.40f,
-                percent
-            );
-
-        crackSoft.color =
-            new Color(
-                1,
-                1,
-                1,
-                Mathf.Clamp01(softT)
-            );
-
-        // MEDIUM
-        float mediumT =
-            Mathf.InverseLerp(
-                0.40f,
-                0.65f,
-                percent
-            );
-
-        crackMedium.color =
-            new Color(
-                1,
-                1,
-                1,
-                Mathf.Clamp01(mediumT)
-            );
-
-        // HARD
-        float hardT =
-            Mathf.InverseLerp(
-                0.65f,
-                0.90f,
-                percent
-            );
-
-        crackHard.color =
-            new Color(
-                1,
-                1,
-                1,
-                Mathf.Clamp01(hardT)
-            );
-    }
 
     public void ShowDestroyed()
     {
@@ -207,10 +161,6 @@ public class TapButton : MonoBehaviour
 
     IEnumerator DestroySequence()
     {
-        // hide crack layers
-        crackSoft.color = new Color(1, 1, 1, 0);
-        crackMedium.color = new Color(1, 1, 1, 0);
-        crackHard.color = new Color(1, 1, 1, 0);
 
         // hide egg
         image.color = new Color(1, 1, 1, 0);
@@ -248,8 +198,6 @@ public class TapButton : MonoBehaviour
         // small extra delay
         yield return new WaitForSeconds(0.20f);
 
-        // show destroyed egg
-        crackDestroyed.color = Color.white;
 
         yield return new WaitForSeconds(0.4f);
 
@@ -314,22 +262,9 @@ public class TapButton : MonoBehaviour
         missedRhythmHits = 0;
         pulseActive = false;
 
-        image.sprite = intactEgg;
-
         currentTaps = 0;
         UpdatePrecisionText();
 
-        if (crackSoft != null)
-            crackSoft.color = new Color(1, 1, 1, 0);
-
-        if (crackMedium != null)
-            crackMedium.color = new Color(1, 1, 1, 0);
-
-        if (crackHard != null)
-            crackHard.color = new Color(1, 1, 1, 0);
-
-        if (crackDestroyed != null)
-            crackDestroyed.color = new Color(1, 1, 1, 0);
 
         switch (eggType)
         {
@@ -377,6 +312,13 @@ public class TapButton : MonoBehaviour
         currentLifetime = lifetime;
 
         timerStarted = false;
+        if (crackRenderer != null)
+        {
+            crackProgress = 0;
+            Color c = crackRenderer.color;
+            c.a = 0f;
+            crackRenderer.color = c;
+        }
     }
     
 
@@ -401,6 +343,10 @@ public class TapButton : MonoBehaviour
         {
             // EVERY TAP COUNTS
             currentTaps++;
+            crackProgress = (float)currentTaps / maxTaps;
+            crackProgress = Mathf.Clamp01(crackProgress);
+
+            UpdateCrackVisual();
 
             // WRONG HIT
             if (!pulseActive)
@@ -477,6 +423,7 @@ public class TapButton : MonoBehaviour
         // =========================
 
         currentTaps++;
+        UpdateCrackVisual();
         if (eggType == EggType.Precision)
         {
             UpdatePrecisionText();
@@ -532,7 +479,59 @@ public class TapButton : MonoBehaviour
             Debug.Log("CLICK WORKED");
         }
     }
-    
+
+    void UpdateCrackVisual()
+    {
+        if (crackRenderer == null)
+            return;
+
+        crackProgress =
+            Mathf.Clamp01(
+                (float)currentTaps / maxTaps
+            );
+
+        // fade in
+        Color c = crackRenderer.color;
+
+        c.a = Mathf.Pow(crackProgress, 1.8f);
+
+        crackRenderer.color = c;
+
+        // optional glow effect
+        float scale =
+            1f + crackProgress * 0.05f;
+
+        crackRenderer.transform.localScale =
+    crackOriginalScale * scale;
+    }
+
+    public void HatchEgg()
+    {
+        visualState = EggVisualState.Hatched;
+
+        // disable egg visuals
+        image.enabled = false;
+
+        // spawn dragon
+        // (you will assign prefab)
+        Instantiate(dragonPrefab, transform.position, Quaternion.identity);
+
+        // light burst effect
+        CameraShake.Instance.Shake(0.2f, 0.2f);
+    }
+
+    public void BreakEgg()
+    {
+        visualState = EggVisualState.Destroyed;
+
+        image.enabled = false;
+
+        Instantiate(brokenEggBottomPrefab, transform.position, Quaternion.identity);
+        Instantiate(gooLeakPrefab, transform.position, Quaternion.identity);
+
+        CameraShake.Instance.Shake(0.25f, 0.25f);
+    }
+
 
     void SpawnParticles()
     {

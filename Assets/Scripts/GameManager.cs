@@ -255,10 +255,6 @@ public class GameManager : MonoBehaviour
         // crack
 
         float percent = (float)button.currentTaps / button.maxTaps;
-
-        // only update if changed
-        button.ApplyCrack(percent);
-
         int points = 1;
 
         if (button.eggType == EggType.Hidden)
@@ -311,6 +307,7 @@ public class GameManager : MonoBehaviour
             // PERFECT
             if (button.currentTaps == button.maxTaps)
             {
+                button.HatchEgg();
                 timer += 10f;
                 AddCombo();
                 SpawnPopup("PERFECT!", Color.yellow);
@@ -336,6 +333,7 @@ public class GameManager : MonoBehaviour
             // OVERLOAD
             if (button.currentTaps > button.maxTaps)
             {
+                button.BreakEgg();
                 SpawnPopup(
                     "OVERLOAD!",
                     Color.magenta
