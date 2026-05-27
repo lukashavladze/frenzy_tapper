@@ -577,27 +577,54 @@ public class GameManager : MonoBehaviour
     }
 
     public void SpawnPopup(
-        string message,
-        Color color)
+    string message,
+    Color color)
     {
+        if (popupPrefab == null)
+        {
+            Debug.LogError("Popup Prefab missing!");
+            return;
+        }
+
         GameObject popup =
             Instantiate(
                 popupPrefab,
-                Canvas.transform
+                Canvas.transform,
+                false
             );
 
         RectTransform rect =
             popup.GetComponent<RectTransform>();
 
+        rect.anchorMin =
+            new Vector2(0.5f, 0.5f);
+
+        rect.anchorMax =
+            new Vector2(0.5f, 0.5f);
+
+        rect.pivot =
+            new Vector2(0.5f, 0.5f);
+
         rect.anchoredPosition =
-            new Vector2(0f, 200f);
+            Vector2.zero;
+
+        rect.localScale =
+            Vector3.one;
 
         TMP_Text text =
             popup.GetComponent<TMP_Text>();
 
-        text.text = message;
+        if (text == null)
+        {
+            text =
+                popup.GetComponentInChildren<TMP_Text>();
+        }
 
-        text.color = color;
+        if (text != null)
+        {
+            text.text = message;
+            text.color = color;
+        }
     }
 
     void EndGame()

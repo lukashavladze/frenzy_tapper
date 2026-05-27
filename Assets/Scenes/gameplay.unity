@@ -2427,7 +2427,7 @@ MonoBehaviour:
   glowIntensity: 0
   visualState: 0
   dragonPrefab: {fileID: 0}
-  brokenEggBottomPrefab: {fileID: 0}
+  brokenEggBottomPrefab: {fileID: 2682685434216326783, guid: 2e343217342b9924dacd2b43fa53dd8c, type: 3}
   gooLeakPrefab: {fileID: 0}
   popupTextPrefab: {fileID: 0}
   popupSpawnPoint: {fileID: 0}
