@@ -73,6 +73,16 @@ public class TapButton : MonoBehaviour
     {
         originalScale = transform.localScale;
 
+        // emergency protection
+        if (originalScale.x <= 0.001f)
+        {
+            originalScale =
+                new Vector3(0.3f, 0.3f, 0.3f);
+
+            transform.localScale =
+                originalScale;
+        }
+
         crackOriginalScale =
             crackRenderer.transform.localScale;
 

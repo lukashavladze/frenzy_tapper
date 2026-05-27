@@ -576,7 +576,7 @@ public class GameManager : MonoBehaviour
         combo = 1;
     }
 
-    void SpawnPopup(
+    public void SpawnPopup(
         string message,
         Color color)
     {
