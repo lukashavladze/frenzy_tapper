@@ -52,6 +52,9 @@ public class TapButton : MonoBehaviour
     private int goodTextIndex = 0;
 
 
+    private ObjectShake objectShake;
+
+
     public enum EggType
     {
         Precision,
@@ -72,7 +75,7 @@ public class TapButton : MonoBehaviour
     private void Start()
     {
         originalScale = transform.localScale;
-
+        objectShake = GetComponent<ObjectShake>();
         // emergency protection
         if (originalScale.x <= 0.001f)
         {
@@ -204,10 +207,7 @@ public class TapButton : MonoBehaviour
         }
 
         // shake
-        CameraShake.Instance.Shake(
-            0.15f,
-            0.12f
-        );
+        objectShake.Shake(0.08f, 0.05f);
 
         // hit pause
         Time.timeScale = 0.05f;
@@ -373,10 +373,10 @@ public class TapButton : MonoBehaviour
 
                 SpawnParticles();
 
-                CameraShake.Instance.Shake(
-                    0.03f,
-                    0.02f
-                );
+                if (objectShake != null)
+                {
+                    objectShake.Shake(0.08f, 0.05f);
+                }
             }
             // CORRECT HIT
             else
@@ -401,10 +401,10 @@ public class TapButton : MonoBehaviour
 
                 SpawnParticles();
 
-                CameraShake.Instance.Shake(
-                    0.05f,
-                    0.03f
-                );
+                if (objectShake != null)
+                {
+                    objectShake.Shake(0.08f, 0.05f);
+                }
 
                 StartCoroutine(PunchAnimation());
             }
@@ -459,10 +459,11 @@ public class TapButton : MonoBehaviour
 
         SpawnParticles();
 
-        CameraShake.Instance.Shake(
-            0.05f,
-            0.03f
-        );
+        if (objectShake != null)
+        {
+            objectShake.Shake(0.08f, 0.05f);
+
+        }
     }
 
     IEnumerator PunchAnimation()
@@ -537,7 +538,10 @@ public class TapButton : MonoBehaviour
 
         Instantiate(dragonPrefab, transform.position, Quaternion.identity);
 
-        CameraShake.Instance.Shake(0.2f, 0.2f);
+        if (objectShake != null)
+        {
+            objectShake.Shake(0.08f, 0.05f);
+        }
     }
 
     public void BreakEgg()
@@ -573,10 +577,10 @@ public class TapButton : MonoBehaviour
             RestoreEggAfterBreak()
         );
 
-        CameraShake.Instance.Shake(
-            0.25f,
-            0.25f
-        );
+        if (objectShake != null)
+        {
+            objectShake.Shake(0.08f, 0.05f);
+        }
     }
 
     IEnumerator RestoreEggAfterBreak()
