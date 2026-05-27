@@ -495,12 +495,29 @@ public class GameManager : MonoBehaviour
         lastUsedButton = currentButton;
 
         // Deactivate old
-        currentButton.SetInactive();
-        currentButton.ResetButton();
+        //currentButton.SetInactive();
+        //currentButton.ResetButton();
+        StartCoroutine(
+        SwitchOldEgg(currentButton, newButton));
 
         // Maintain 3 active buttons
         EnsureThreeActive(newButton);
     }
+
+    IEnumerator SwitchOldEgg(
+    TapButton oldButton,
+    TapButton newButton
+)
+    {
+        // small delay so popup appears instantly
+        yield return new WaitForSeconds(0.15f);
+
+        oldButton.SetInactive();
+        oldButton.ResetButton();
+
+        EnsureThreeActive(newButton);
+    }
+
 
     void ActivateExtraButton(
         TapButton current)
