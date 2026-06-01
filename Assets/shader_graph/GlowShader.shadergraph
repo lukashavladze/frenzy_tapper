@@ -1038,13 +1038,13 @@
     "m_PerRendererData": false,
     "m_customAttributes": [],
     "m_Value": {
-        "r": 0.08144864439964295,
-        "g": 0.9716981053352356,
-        "b": 0.0,
+        "r": 1.0,
+        "g": 0.9224535822868347,
+        "b": 0.051886796951293948,
         "a": 1.0
     },
     "isMainColor": false,
-    "m_ColorMode": 0
+    "m_ColorMode": 1
 }
 
 {
