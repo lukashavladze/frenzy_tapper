@@ -40,6 +40,12 @@ public class TapButton : MonoBehaviour
     public float glowIntensity;
     public EggVisualState visualState;
 
+    private static readonly int RevealID =
+        Shader.PropertyToID("_revealamount");
+
+    private static readonly int GlowID =
+        Shader.PropertyToID("_glowcolor");
+
 
     public GameObject dragonPrefab;
     public GameObject brokenEggBottomPrefab;
@@ -86,12 +92,14 @@ public class TapButton : MonoBehaviour
                 originalScale;
         }
 
-        crackOriginalScale =
-            crackRenderer.transform.localScale;
+        //crackRenderer = GetComponentInChildren<SpriteRenderer>();
 
-        Color c = crackRenderer.color;
-        c.a = 0f;
-        crackRenderer.color = c;
+        //crackOriginalScale =
+        //    crackRenderer.transform.localScale;
+
+        //Color c = crackRenderer.color;
+        //c.a = 0f;
+        //crackRenderer.color = c;
     }
 
     public enum EggVisualState
@@ -116,9 +124,22 @@ public class TapButton : MonoBehaviour
             c.a = 0f;
             crackRenderer.color = c;
         }
+
+        if (eggMaterial != null)
+        {
+            eggMaterial.SetFloat(RevealID, 0f);
+            eggMaterial.SetColor(GlowID, Color.black);
+        }
+
         if (eggType == EggType.Rhythm)
         {
             StartCoroutine(RhythmPulse());
+        }
+        if (precisionTextCount != null)
+        {
+            precisionTextCount.gameObject.SetActive(
+                eggType == EggType.Precision
+            );
         }
         image.color = Color.white;
 
@@ -170,6 +191,10 @@ public class TapButton : MonoBehaviour
     {
         if (isDestroying)
             return;
+        if (precisionTextCount != null)
+        {
+            precisionTextCount.gameObject.SetActive(false);
+        }
 
         isDestroying = true;
 
@@ -184,6 +209,11 @@ public class TapButton : MonoBehaviour
             Color crackColor = crackRenderer.color;
             crackColor.a = 0f;
             crackRenderer.color = crackColor;
+        }
+        if (eggMaterial != null)
+        {
+            eggMaterial.SetFloat(RevealID, 0f);
+            eggMaterial.SetColor(GlowID, Color.black);
         }
 
         // particles
@@ -324,6 +354,16 @@ public class TapButton : MonoBehaviour
                 lifetime = 4f;
 
                 break;
+        }
+
+        if (eggMaterial != null)
+        {
+            eggMaterial.SetFloat(RevealID, 0f);
+
+            eggMaterial.SetColor(
+                GlowID,
+                Color.black
+            );
         }
 
         currentLifetime = lifetime;
@@ -500,7 +540,7 @@ public class TapButton : MonoBehaviour
 
     void UpdateCrackVisual()
     {
-        if (crackRenderer == null)
+        if (eggMaterial == null)
             return;
 
         crackProgress =
@@ -508,19 +548,44 @@ public class TapButton : MonoBehaviour
                 (float)currentTaps / maxTaps
             );
 
-        // fade in
-        Color c = crackRenderer.color;
+        // Reveal reaches max at 50% progress
+        float revealProgress =
+            Mathf.Clamp01(crackProgress * 2f);
 
-        c.a = Mathf.Pow(crackProgress, 1.8f);
+        float reveal =
+            Mathf.Lerp(
+                0f,
+                0.55f,
+                revealProgress
+            );
 
-        crackRenderer.color = c;
+        eggMaterial.SetFloat(
+            RevealID,
+            reveal
+        );
 
-        // optional glow effect
-        float scale =
-            1f + crackProgress * 0.05f;
+        // Glow starts only AFTER reveal is complete
+        float glowProgress =
+            Mathf.InverseLerp(
+                0.5f, // start glowing here
+                1f,   // fully glowing here
+                crackProgress
+            );
 
-        crackRenderer.transform.localScale =
-    crackOriginalScale * scale;
+        float glowIntensity =
+            Mathf.Lerp(
+                0f,
+                4f,
+                glowProgress
+            );
+
+        Color glowColor =
+            Color.white * glowIntensity;
+
+        eggMaterial.SetColor(
+            GlowID,
+            glowColor
+        );
     }
 
     public void HatchEgg()
@@ -537,6 +602,10 @@ public class TapButton : MonoBehaviour
         }
 
         Instantiate(dragonPrefab, transform.position, Quaternion.identity);
+        if (precisionTextCount != null)
+        {
+            precisionTextCount.gameObject.SetActive(false);
+        }
 
         if (objectShake != null)
         {
@@ -571,6 +640,10 @@ public class TapButton : MonoBehaviour
 
         // remove broken egg later
         Destroy(crack, 0.7f);
+        if (precisionTextCount != null)
+        {
+            precisionTextCount.gameObject.SetActive(false);
+        }
 
         // restore original egg later
         StartCoroutine(
