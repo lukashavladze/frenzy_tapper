@@ -14,15 +14,6 @@ TextureImporter:
   - first:
       213: -4799945578007369584
     second: liq1_3
-  - first:
-      213: 206085488702815375
-    second: liq1_4
-  - first:
-      213: 2956046142747550541
-    second: liq1_5
-  - first:
-      213: 896565877354423730
-    second: liq1_6
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -160,10 +151,10 @@ TextureImporter:
       name: liq1_0
       rect:
         serializedVersion: 2
-        x: 40
-        y: 204
-        width: 286
-        height: 196
+        x: 0
+        y: 8
+        width: 456
+        height: 392
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -182,10 +173,10 @@ TextureImporter:
       name: liq1_1
       rect:
         serializedVersion: 2
-        x: 393
-        y: 8
-        width: 107
-        height: 389
+        x: 207
+        y: 216
+        width: 12
+        height: 14
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -204,10 +195,10 @@ TextureImporter:
       name: liq1_2
       rect:
         serializedVersion: 2
-        x: 476
-        y: 357
-        width: 15
-        height: 18
+        x: 175
+        y: 11
+        width: 164
+        height: 201
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -226,72 +217,6 @@ TextureImporter:
       name: liq1_3
       rect:
         serializedVersion: 2
-        x: 207
-        y: 216
-        width: 12
-        height: 14
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 098e9a19dea236db0800000000000000
-      internalID: -4799945578007369584
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: liq1_4
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 28
-        width: 68
-        height: 95
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: f8c7e7bf8a92cd200800000000000000
-      internalID: 206085488702815375
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: liq1_5
-      rect:
-        serializedVersion: 2
-        x: 175
-        y: 11
-        width: 164
-        height: 201
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: d43a1261e4cf50920800000000000000
-      internalID: 2956046142747550541
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: liq1_6
-      rect:
-        serializedVersion: 2
         x: 177
         y: 103
         width: 18
@@ -304,8 +229,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 2b5627d4aed317c00800000000000000
-      internalID: 896565877354423730
+      spriteID: 098e9a19dea236db0800000000000000
+      internalID: -4799945578007369584
       vertices: []
       indices: 
       edges: []
@@ -328,9 +253,6 @@ TextureImporter:
       liq1_1: 2136831956343735905
       liq1_2: 2089643900119474232
       liq1_3: -4799945578007369584
-      liq1_4: 206085488702815375
-      liq1_5: 2956046142747550541
-      liq1_6: 896565877354423730
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
