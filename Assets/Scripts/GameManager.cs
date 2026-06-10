@@ -91,7 +91,7 @@ public class GameManager : MonoBehaviour
 
                 if (buttons[i].currentLifetime <= 0)
                 {
-                    Debug.Log(
+                    Debug.Log( 
                         buttons[i].name + " expired"
                     );
                     ExpireButton(buttons[i]);

@@ -149,11 +149,13 @@ Material:
     - _ZWrite: 1
     - _ZWriteControl: 0
     - _erosion: 0.1
+    - _glossiness: 1
     - _goodisolvepower: 1
     - _gooscale: 7
     - _normaloffset: 1
     - _normalstrength: 1
     - _power: 5
+    - _specular: 1
     - _voronoiAgitation: 3
     - _voronoiScale: 3
     - _voronoipower: 1
