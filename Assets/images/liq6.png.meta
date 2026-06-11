@@ -49,9 +49,9 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 100
@@ -145,10 +145,10 @@ TextureImporter:
       name: liq6_0
       rect:
         serializedVersion: 2
-        x: 45
-        y: 0
-        width: 452
-        height: 275
+        x: 49
+        y: 1
+        width: 448
+        height: 216
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -168,7 +168,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 392
-        y: 273
+        y: 215
         width: 102
         height: 37
       alignment: 0
@@ -189,7 +189,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 5e97eb03825dee720800000000000000
     internalID: 0
     vertices: []
     indices: 
