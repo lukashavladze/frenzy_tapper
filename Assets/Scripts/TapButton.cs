@@ -60,6 +60,8 @@ public class TapButton : MonoBehaviour
 
     private ObjectShake objectShake;
 
+    public GameObject gooExplosionPrefab;
+
 
     public enum EggType
     {
@@ -625,6 +627,24 @@ public class TapButton : MonoBehaviour
         {
             crackRenderer.enabled = false;
         }
+
+        // GOO EXPLOSION
+        if (gooExplosionPrefab != null)
+        {
+            GameObject goo =
+                Instantiate(
+                    gooExplosionPrefab,
+                    transform.position,
+                    Quaternion.identity,
+                    transform.parent
+                );
+
+            goo.transform.localScale =
+                transform.localScale;
+
+            Destroy(goo, 1f); // animation length
+        }
+        
 
         // spawn broken egg
         GameObject crack =
